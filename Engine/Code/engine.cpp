@@ -193,7 +193,18 @@ void Init(App* app)
 void Gui(App* app)
 {
     ImGui::Begin("Info");
+    ImGui::BeginChild("program data");
     ImGui::Text("FPS: %f", 1.0f/app->deltaTime);
+    ImGui::Text("OpenGlVersion: %s", glGetString(GL_VERSION));
+    ImGui::Text("OpenGlRenderer: %s", glGetString(GL_RENDERER));
+    
+    int num_extensions;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+    for (int i = 0; i < num_extensions; i++) {
+        ImGui::Text("GL_EXTENSION_%i : %s", i, glGetStringi(GL_EXTENSIONS,GLuint(i)));
+    }
+
+    ImGui::EndChild();
     ImGui::End();
 }
 

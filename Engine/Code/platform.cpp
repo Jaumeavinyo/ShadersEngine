@@ -211,8 +211,10 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         Gui(&app);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui::EndFrame();
         ImGui::Render();
-
+       
         // Clear input state if required by ImGui
         if (ImGui::GetIO().WantCaptureKeyboard)
             for (u32 i = 0; i < KEY_COUNT; ++i)
