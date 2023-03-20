@@ -91,6 +91,20 @@ struct App
 
     // VAO object to link our screen filling quad with our textured quad shader
     GLuint vao;
+
+
+
+
+    //MY OWN DATA
+    float positions[6] = {
+       -0.5f,-0.5f,
+        0.0f,0.5f,
+        0.5f,-0.5f
+
+    };
+
+    GLuint buffer;
+
 };
 
 void Init(App* app);

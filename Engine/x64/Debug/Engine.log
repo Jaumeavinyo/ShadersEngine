@@ -1,3 +1,25 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(499,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
   engine.cpp
-  Engine.vcxproj -> C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\Engine.exe
+  platform.cpp
+C:\Users\jaumeas3\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(42,36): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\jaumeas3\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(43,36): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\jaumeas3\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(44,29): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\jaumeas3\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(45,29): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+  Generating Code...
+  Engine.vcxproj -> C:\Users\jaumeas3\Documents\GitHub\ShadersEngine\Engine\Code\Engine.exe

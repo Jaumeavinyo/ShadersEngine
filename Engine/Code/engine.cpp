@@ -178,6 +178,24 @@ u32 LoadTexture2D(App* app, const char* filepath)
     }
 }
 
+void Gui(App* app)
+{
+    ImGui::Begin("Info");
+    ImGui::BeginChild("program data");
+    ImGui::Text("FPS: %f", 1.0f / app->deltaTime);
+    ImGui::Text("OpenGlVersion: %s", glGetString(GL_VERSION));
+    ImGui::Text("OpenGlRenderer: %s", glGetString(GL_RENDERER));
+
+    int num_extensions;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+    for (int i = 0; i < num_extensions; i++) {
+        ImGui::Text("GL_EXTENSION_%i : %s", i, glGetStringi(GL_EXTENSIONS, GLuint(i)));
+    }
+
+    ImGui::EndChild();
+    ImGui::End();
+}
+
 void Init(App* app)
 {
     // TODO: Initialize your resources here!
@@ -186,46 +204,27 @@ void Init(App* app)
     // - vaos
     // - programs (and retrieve uniform indices)
     // - textures
+    
 
-    const VertexV3V2 vertices[] = {
-        {glm::vec3(-0.5,-0.5, 0.0),glm::vec2(0.0,0.0)},
-        {glm::vec3(0.5, -0.5, 0.0),glm::vec2(1.0,0.0)},
-        {glm::vec3(0.5, 0.5, 0.0),glm::vec2(1.0,1.0)},
-        {glm::vec3(-0.5, 0.5, 0.0),glm::vec2(0.0,1.0)},
-    };
+   
+    glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
+    glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
+    //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
+    // normalized means that if we pass an rgb with values 0-255 convert it to 0.-1. stride is ammount of bytes between each vertex with all its attributes inside
+    // the final pointer is
+    //call for every attribute in bufferr
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
+    glEnableVertexAttribArray(0);//enable attr 0, created avobe
 
-    const u16 indices[] = {
-        0,1,2,
-        0,2,3
-    };
-
-    //Geometry
  
-    glGenBuffers(1, &app->embeddedVertices);
-    glBindBuffer(GL_ARRAY_BUFFER, app->embeddedVertices); 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//?
 
-    glGenBuffers(1, &app->embeddedElements);
-    glBindBuffer(GL_ARRAY_BUFFER, app->embeddedElements);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // Attribute state
+    app->texturedGeometryProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_GEOMETRY");//creates program generates its id and pushback in program list
+    Program& texturedGeometryProgram = app->programs[app->texturedGeometryProgramIdx];//select that program
+    app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture"); //block of memory where texture is stored, like when buffer is stored in GLuint
 
-    glGenVertexArrays(1,&app->vao);
-    glBindVertexArray(app->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, app->embeddedVertices);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexV3V2), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexV3V2), (void*)12);
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->embeddedElements);
-    glBindVertexArray(0);
-
-    app->texturedGeometryProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_GEOMETRY");
-    Program& texturedGeometryProgram = app->programs[app->texturedGeometryProgramIdx];
-    app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture");
 
 
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
@@ -234,23 +233,7 @@ void Init(App* app)
     app->mode = Mode::Mode_TexturedQuad;
 }
 
-void Gui(App* app)
-{
-    ImGui::Begin("Info");
-    ImGui::BeginChild("program data");
-    ImGui::Text("FPS: %f", 1.0f/app->deltaTime);
-    ImGui::Text("OpenGlVersion: %s", glGetString(GL_VERSION));
-    ImGui::Text("OpenGlRenderer: %s", glGetString(GL_RENDERER));
-    
-    int num_extensions;
-    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
-    for (int i = 0; i < num_extensions; i++) {
-        ImGui::Text("GL_EXTENSION_%i : %s", i, glGetStringi(GL_EXTENSIONS,GLuint(i)));
-    }
 
-    ImGui::EndChild();
-    ImGui::End();
-}
 
 void Update(App* app)
 {
@@ -262,39 +245,43 @@ void Render(App* app)
     switch (app->mode)
     {
         case Mode_TexturedQuad:
-            {
-                // TODO: Draw your textured quad here!
-                // - clear the framebuffer
-                // - set the viewport
-                // - set the blending state
-                // - bind the texture into unit 0
-                // - bind the program 
-                //   (...and make its texture sample from unit 0)
-                // - bind the vao
-                // - glDrawElements() !!!
-
+        {
+            // TODO: Draw your textured quad here!
+            // - clear the framebuffer
+            // - set the viewport
+            // - set the blending state
+            // - bind the texture into unit 0
+            // - bind the program 
+            //   (...and make its texture sample from unit 0)
+            // - bind the vao
+            // - glDrawElements() !!!
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glViewport(0, 0, app->displaySize.x, app->displaySize.y);
 
-            Program& programTexturedGeometry = app->programs[app->texturedGeometryProgramIdx];
-            glUseProgram(programTexturedGeometry.handle);
-            glBindVertexArray(app->vao);
+            Program& programTexturedgeometry = app->programs[app->texturedGeometryProgramIdx];
+            glUseProgram(programTexturedgeometry.handle);
+            glBindVertexArray(app->buffer);
+
+
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             glUniform1i(app->programUniformTexture, 0);
             glActiveTexture(GL_TEXTURE0);
-            GLuint texturehandle = app->textures[app->diceTexIdx].handle;
-            glBindTexture(GL_TEXTURE_2D, texturehandle);
+            GLuint textureHandle = app->textures[app->diceTexIdx].handle;
+            glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
+
+
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
             glBindVertexArray(0);
             glUseProgram(0);
-            }
+        }
             break;
 
         default:;
