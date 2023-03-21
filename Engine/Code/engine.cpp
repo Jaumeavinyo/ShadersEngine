@@ -91,10 +91,10 @@ GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 
 u32 LoadProgram(App* app, const char* filepath, const char* programName)
 {
-    String programSource = ReadTextFile(filepath);
+    String programSource = ReadTextFile(filepath); //returns a string with the shader
 
     Program program = {};
-    program.handle = CreateProgramFromSource(programSource, programName);
+    program.handle = CreateProgramFromSource(programSource, programName);//returns uint for shader program location
     program.filepath = filepath;
     program.programName = programName;
     program.lastWriteTimestamp = GetFileLastWriteTimestamp(filepath);
@@ -204,21 +204,26 @@ void Init(App* app)
     // - vaos
     // - programs (and retrieve uniform indices)
     // - textures
-    
+   /* VertexV3V2 vertices[] = {
+       { glm::vec3(-0.5,-0.5,0.0),glm::vec2(0.0,0.0) },
+       { glm::vec3(0.5,-0.5,0.0),glm::vec2(1.0,0.0) },
+       { glm::vec3(0.5,0.5,0.0),glm::vec2(1.0,1.0) },
+       { glm::vec3(-0.5,0.5,0.0),glm::vec2(0.0,1.0) },
+    };*/
 
    
     glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
     glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
     //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
-    // normalized means that if we pass an rgb with values 0-255 convert it to 0.-1. stride is ammount of bytes between each vertex with all its attributes inside
-    // the final pointer is
+    // normalized means that if we pass an rgb with values 0-255 convert it to 0.to  1. stride is ammount of bytes between each vertex with all its attributes inside
+    // the final pointer is the offset, the position of the attribute in every vertex
     //call for every attribute in bufferr
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
     glEnableVertexAttribArray(0);//enable attr 0, created avobe
 
  
-    glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//?
+    glBindBuffer(GL_ARRAY_BUFFER, 0);//unbind current binded buffer
 
 
     app->texturedGeometryProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_GEOMETRY");//creates program generates its id and pushback in program list
@@ -228,6 +233,7 @@ void Init(App* app)
 
 
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
+
 
 
     app->mode = Mode::Mode_TexturedQuad;
@@ -277,7 +283,7 @@ void Render(App* app)
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
 
 
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            //glDrawArrays(GL_TRIANGLES, 0, 3);
 
             glBindVertexArray(0);
             glUseProgram(0);
