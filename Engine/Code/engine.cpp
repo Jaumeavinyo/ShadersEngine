@@ -198,18 +198,7 @@ void Gui(App* app)
 
 void Init(App* app)
 {
-    // TODO: Initialize your resources here!
-    // - vertex buffers
-    // - element/index buffers
-    // - vaos
-    // - programs (and retrieve uniform indices)
-    // - textures
-   /* VertexV3V2 vertices[] = {
-       { glm::vec3(-0.5,-0.5,0.0),glm::vec2(0.0,0.0) },
-       { glm::vec3(0.5,-0.5,0.0),glm::vec2(1.0,0.0) },
-       { glm::vec3(0.5,0.5,0.0),glm::vec2(1.0,1.0) },
-       { glm::vec3(-0.5,0.5,0.0),glm::vec2(0.0,1.0) },
-    };*/
+  
 
    
     glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
@@ -219,21 +208,12 @@ void Init(App* app)
     // normalized means that if we pass an rgb with values 0-255 convert it to 0.to  1. stride is ammount of bytes between each vertex with all its attributes inside
     // the final pointer is the offset, the position of the attribute in every vertex
     //call for every attribute in bufferr
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (void*)0);
     glEnableVertexAttribArray(0);//enable attr 0, created avobe
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
+    
 
  
     glBindBuffer(GL_ARRAY_BUFFER, 0);//unbind current binded buffer
-
-
-    app->texturedGeometryProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_GEOMETRY");//creates program generates its id and pushback in program list
-    Program& texturedGeometryProgram = app->programs[app->texturedGeometryProgramIdx];//select that program
-    app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture"); //block of memory where texture is stored, like when buffer is stored in GLuint
-
-
-
-    app->diceTexIdx = LoadTexture2D(app, "dice.png");
-
 
 
     app->mode = Mode::Mode_TexturedQuad;
@@ -252,41 +232,15 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-            // TODO: Draw your textured quad here!
-            // - clear the framebuffer
-            // - set the viewport
-            // - set the blending state
-            // - bind the texture into unit 0
-            // - bind the program 
-            //   (...and make its texture sample from unit 0)
-            // - bind the vao
-            // - glDrawElements() !!!
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glViewport(0, 0, app->displaySize.x, app->displaySize.y);
-
-            Program& programTexturedgeometry = app->programs[app->texturedGeometryProgramIdx];
-            glUseProgram(programTexturedgeometry.handle);
-            glBindVertexArray(app->buffer);
+           
+          
+            glClear(GL_COLOR_BUFFER_BIT);
 
 
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-            glUniform1i(app->programUniformTexture, 0);
-            glActiveTexture(GL_TEXTURE0);
-            GLuint textureHandle = app->textures[app->diceTexIdx].handle;
-            glBindTexture(GL_TEXTURE_2D, textureHandle);
-
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, 0);
-
-
-            //glDrawArrays(GL_TRIANGLES, 0, 3);
-
-            glBindVertexArray(0);
-            glUseProgram(0);
+          
         }
             break;
 
