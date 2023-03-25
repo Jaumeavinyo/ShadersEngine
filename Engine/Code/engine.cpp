@@ -12,6 +12,7 @@
 #include <iostream>
 
 
+
 using namespace std;
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
@@ -267,20 +268,20 @@ void Init(App* app)
    
    
     glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
-    
+    glCheckError();
     glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
-   
+    glCheckError();
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
-    
-                                                                                     //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
+    glCheckError();
+    //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
     // normalized means that if we pass an rgb with values 0-255 convert it to 0.to  1. stride is ammount of bytes between each vertex with all its attributes inside
     // the final pointer is the offset, the position of the attribute in every vertex
     //call for every attribute in bufferr
    
     glEnableVertexAttribArray(0);//enable attr 0, created avobe
-    
+    glCheckError();
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
-    
+    glCheckError();
     
     std::string vertexShader =
         "#version 330 core\n"
@@ -300,9 +301,10 @@ void Init(App* app)
         "color = vec4(1.0,0.5,0.0,1.0);\n"
         "}\n"
         ;
-  
+    
     unsigned int shader = createShader(vertexShader,fragmentShader);
     glUseProgram(shader);
+    glCheckError();
     
     GLuint error;
     
@@ -341,11 +343,15 @@ void Render(App* app)
             
            
             glClearColor(0.2, 0.2, 0.2, 1.0);
+            
             glClear(GL_COLOR_BUFFER_BIT);
+            
 
             glViewport(0, 0, app->displaySize.x,app->displaySize.y);
+           
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
+           
 
           
         }

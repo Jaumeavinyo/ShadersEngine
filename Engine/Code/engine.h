@@ -4,9 +4,12 @@
 
 #pragma once
 
+
+
 #include "platform.h"
 #include <glad/glad.h>
 
+#include "..\errorHandler.h"
 
 
 typedef glm::vec2  vec2;
@@ -113,4 +116,7 @@ void Gui(App* app);
 void Update(App* app);
 
 void Render(App* app);
+
+
+
 
