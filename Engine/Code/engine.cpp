@@ -9,7 +9,10 @@
 #include <imgui.h>
 #include <stb_image.h>
 #include <stb_image_write.h>
+#include <iostream>
 
+
+using namespace std;
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
     GLchar  infoLogBuffer[1024] = {};
@@ -196,25 +199,116 @@ void Gui(App* app)
     ImGui::End();
 }
 
+
+static unsigned int compileShader( unsigned int type, const std::string& source) {
+
+    unsigned int id = glCreateShader(type);
+    const char* src = source.c_str();
+    glShaderSource(id, 1, &src, nullptr);
+    glCompileShader(id);
+
+    //ERROR HANDLING HERE
+    int result;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    if (result == GL_FALSE) {
+        int length;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        char* message = (char*)alloca(length*sizeof(char));
+        glGetShaderInfoLog(id, length, &length, message);
+        ELOG("Failed to compile %i shader!", type);
+        glDeleteShader(id);
+        return 0;
+    }
+    else if (result == GL_TRUE) {
+        ELOG("Success to compile %i shader!", type);
+    }
+
+    return id;
+}
+static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader) {
+
+    unsigned int program = glCreateProgram();
+    unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
+    unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
+
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+
+    //HANDLE LINKING ERRORS
+    int linkSuccess = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
+
+    if (linkSuccess == GL_FALSE) {
+        GLint logLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+
+        // Allocate memory for the log
+        char* logMessage = new char[logLength];
+        glGetProgramInfoLog(program, logLength, nullptr, logMessage);
+        ELOG("program linking failed, error: %s", logMessage);
+        delete[] logMessage;
+    }
+
+    glValidateProgram(program);
+   
+    
+   
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    return program;
+}
+
 void Init(App* app)
 {
   
-
+   
    
     glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
+    
     glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
+   
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
-    //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
+    
+                                                                                     //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
     // normalized means that if we pass an rgb with values 0-255 convert it to 0.to  1. stride is ammount of bytes between each vertex with all its attributes inside
     // the final pointer is the offset, the position of the attribute in every vertex
     //call for every attribute in bufferr
+   
     glEnableVertexAttribArray(0);//enable attr 0, created avobe
+    
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
     
-
- 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);//unbind current binded buffer
-
+    
+    std::string vertexShader =
+        "#version 330 core\n"
+        "\n"
+        "layout(location = 0) in vec4 position;\n"
+        "void main()\n"
+        "{\n"
+        "gl_Position = position;\n"
+        "}\n"          
+        ;
+    std::string fragmentShader =
+        "#version 330 core\n"
+        "\n"
+        "layout(location = 0) out vec4 color;\n"
+        "void main()\n"
+        "{\n"
+        "color = vec4(1.0,0.5,0.0,1.0);\n"
+        "}\n"
+        ;
+  
+    unsigned int shader = createShader(vertexShader,fragmentShader);
+    glUseProgram(shader);
+    
+    GLuint error;
+    
+    while ((error = glGetError()) != GL_NO_ERROR) {
+        std::cout << "OpenGl error: " << error << "-"<< std::endl;
+    }
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -233,10 +327,23 @@ void Render(App* app)
         case Mode_TexturedQuad:
         {
 
+            // TODO: Draw your textured quad here!
+            // - clear the framebuffer
+            // - set the viewport
+            // - set the blending state
+            // - bind the texture into unit 0
+            // - bind the program 
+            //   (...and make its texture sample from unit 0)
+            // - bind the vao
+            // - glDrawElements() !!!
+
            
-          
+            
+           
+            glClearColor(0.2, 0.2, 0.2, 1.0);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            glViewport(0, 0, app->displaySize.x,app->displaySize.y);
 
             glDrawArrays(GL_TRIANGLES, 0, 3);
 

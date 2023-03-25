@@ -121,7 +121,7 @@ int main()
     app.displaySize = ivec2(WINDOW_WIDTH, WINDOW_HEIGHT);
     app.isRunning   = true;
 
-		glfwSetErrorCallback(OnGlfwError);
+	glfwSetErrorCallback(OnGlfwError);
 
     if (!glfwInit())
     {
@@ -140,6 +140,8 @@ int main()
         ELOG("glfwCreateWindow() failed\n");
         return -1;
     }
+    
+ 
 
     glfwSetWindowUserPointer(window, &app);
 
@@ -152,6 +154,8 @@ int main()
     glfwSetWindowCloseCallback(window, OnGlfwCloseWindow);
 
     glfwMakeContextCurrent(window);
+
+    
 
     // Load all OpenGL functions using the glfw loader function
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
