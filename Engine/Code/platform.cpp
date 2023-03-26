@@ -267,7 +267,7 @@ int main()
         // Reset frame allocator
         GlobalFrameArenaHead = 0;
     }
-
+    glDeleteProgram(app.shader);//should be when stopping loop? https://www.youtube.com/watch?v=2pv0Fbo-7ms&t=1114s
     free(GlobalFrameArenaMemory);
 
     ImGui_ImplOpenGL3_Shutdown();

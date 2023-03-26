@@ -19,6 +19,11 @@ typedef glm::ivec2 ivec2;
 typedef glm::ivec3 ivec3;
 typedef glm::ivec4 ivec4;
 
+struct ShaderProgramSource {
+    std::string vertexSrc;
+    std::string fragmentSrc;
+};
+
 struct Image
 {
     void* pixels;
@@ -105,6 +110,8 @@ struct App
         0.5f,-0.5f
     };
 
+    ShaderProgramSource shaderProgramsSrc;
+    unsigned int shader;
     unsigned int vertexBufferObj;
     unsigned int vertexArrayObj;
 
