@@ -105,7 +105,8 @@ struct App
         0.5f,-0.5f
     };
 
-    unsigned int buffer;
+    unsigned int vertexBufferObj;
+    unsigned int vertexArrayObj;
 
 };
 

@@ -267,9 +267,9 @@ void Init(App* app)
   
    
    
-    glGenBuffers(1, &app->buffer);//create "1" buffer in "&buffer"
+    glGenBuffers(1, &app->vertexBufferObj);//create "1" buffer in "&buffer"
     glCheckError();
-    glBindBuffer(GL_ARRAY_BUFFER, app->buffer);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
+    glBindBuffer(GL_ARRAY_BUFFER, app->vertexBufferObj);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
     glCheckError();
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
     glCheckError();
@@ -278,6 +278,10 @@ void Init(App* app)
     // the final pointer is the offset, the position of the attribute in every vertex
     //call for every attribute in bufferr
    
+    glGenVertexArrays(1, &app->vertexArrayObj);
+    glCheckError();
+    glBindVertexArray(app->vertexArrayObj);
+    glCheckError();
     glEnableVertexAttribArray(0);//enable attr 0, created avobe
     glCheckError();
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
@@ -305,6 +309,7 @@ void Init(App* app)
     unsigned int shader = createShader(vertexShader,fragmentShader);
     glUseProgram(shader);
     glCheckError();
+   
     
     GLuint error;
     
@@ -347,11 +352,11 @@ void Render(App* app)
             glClear(GL_COLOR_BUFFER_BIT);
             
 
-            glViewport(0, 0, app->displaySize.x,app->displaySize.y);
+            //glViewport(0, 0, app->displaySize.x,app->displaySize.y);
            
-
+            glBindVertexArray(app->vertexArrayObj);
             glDrawArrays(GL_TRIANGLES, 0, 3);
-           
+            glBindVertexArray(0);
 
           
         }
