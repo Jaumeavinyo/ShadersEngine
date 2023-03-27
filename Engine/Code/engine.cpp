@@ -297,18 +297,15 @@ void Init(App* app)
 {
   
    
-   
-    glGenBuffers(1, &app->vertexBufferObj);//create "1" buffer in "&buffer"
+    //BUFFER_0BJECT
+    glGenBuffers(1, &app->vertexBufferObj);
     glCheckError();
-    glBindBuffer(GL_ARRAY_BUFFER, app->vertexBufferObj);//select as an "GL_ARRAY_BUFFER" of info the "buffer" we are binding
+    glBindBuffer(GL_ARRAY_BUFFER, app->vertexBufferObj);
     glCheckError();
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), app->positions, GL_STATIC_DRAW);//create a space of memory in the binded buffer as "GL_ARRAY_BUFFER" size of "6 floats", bytes in positions and type of draw
+    glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), app->positions, GL_STATIC_DRAW);
     glCheckError();
-    //index for the attribute position (attribute 1 = pos(3float), attr 2 = uv(2float),attr 3 = normal(3float),size is the ammount of elements in the attribute, 3dpos will be 3, type of data "GL_FLOAT",
-    // normalized means that if we pass an rgb with values 0-255 convert it to 0.to  1. stride is ammount of bytes between each vertex with all its attributes inside
-    // the final pointer is the offset, the position of the attribute in every vertex
-    //call for every attribute in bufferr
-   
+
+    //VAO
     glGenVertexArrays(1, &app->vertexArrayObj);
     glCheckError();
     glBindVertexArray(app->vertexArrayObj);
@@ -318,17 +315,26 @@ void Init(App* app)
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
     glCheckError();
     
+
+    //IBO
+    glGenBuffers(1, &app->indexBufferObj);
+    glCheckError();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->indexBufferObj);
+    glCheckError();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), app->indices, GL_STATIC_DRAW);
+    glCheckError();
+
+
     app->shaderProgramsSrc = parseShader("Basic.shader");
     app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
     glUseProgram(app->shader);
     glCheckError();
    
+    int location = glGetUniformLocation(app->shader, "u_Color");
+    assert(location != -1);
+    glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
     
-    GLuint error;
-    
-    while ((error = glGetError()) != GL_NO_ERROR) {
-        std::cout << "OpenGl error: " << error << "-"<< std::endl;
-    }
+   
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -368,8 +374,8 @@ void Render(App* app)
             //glViewport(0, 0, app->displaySize.x,app->displaySize.y);
            
             glBindVertexArray(app->vertexArrayObj);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-            glBindVertexArray(0);
+            glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT,nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+            glCheckError();
 
           
         }

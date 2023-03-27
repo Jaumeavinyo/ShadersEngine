@@ -104,16 +104,23 @@ struct App
    
 
     //MY OWN DATA
-    float positions[6] = {
-       -0.5f,-0.5f,
-        0.0f,0.5f,
-        0.5f,-0.5f
+    float positions[8] = {
+       -1.0f,-1.0f,
+        1.0f,-1.0f,
+        0.9f, 0.9f,
+       -0.9f, 0.9f 
+    };
+
+    unsigned int indices[6] = {
+        0,1,2,
+        2,3,0
     };
 
     ShaderProgramSource shaderProgramsSrc;
     unsigned int shader;
     unsigned int vertexBufferObj;
     unsigned int vertexArrayObj;
+    unsigned int indexBufferObj;
 
 };
 

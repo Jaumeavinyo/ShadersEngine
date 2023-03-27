@@ -101,9 +101,6 @@
     <ClInclude Include="errorHandler.h">
       <Filter>Engine\resources</Filter>
     </ClInclude>
-    <ClInclude Include="Hsdfsdeader.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="WorkingDir\shaders.glsl">

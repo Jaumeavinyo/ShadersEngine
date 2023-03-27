@@ -36,7 +36,6 @@
     <ClInclude Include="Code\engine.h" />
     <ClInclude Include="Code\platform.h" />
     <ClInclude Include="errorHandler.h" />
-    <ClInclude Include="Hsdfsdeader.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\glad.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\khrplatform.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h" />
