@@ -116,6 +116,8 @@ struct App
         2,3,0
     };
 
+    int textureLocation;
+
     ShaderProgramSource shaderProgramsSrc;
     unsigned int shader;
     unsigned int vertexBufferObj;

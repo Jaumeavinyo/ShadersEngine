@@ -327,12 +327,13 @@ void Init(App* app)
 
     app->shaderProgramsSrc = parseShader("Basic.shader");
     app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    glUseProgram(app->shader);
-    glCheckError();
+
+    app->diceTexIdx = LoadTexture2D(app, "/dice.png");
+
    
-    int location = glGetUniformLocation(app->shader, "u_Color");
-    assert(location != -1);
-    glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+   
+    app->textureLocation = glGetUniformLocation(app->shader, "uTexture");
+  
     
    
 
@@ -353,27 +354,28 @@ void Render(App* app)
         case Mode_TexturedQuad:
         {
 
-            // TODO: Draw your textured quad here!
-            // - clear the framebuffer
-            // - set the viewport
-            // - set the blending state
-            // - bind the texture into unit 0
-            // - bind the program 
-            //   (...and make its texture sample from unit 0)
-            // - bind the vao
-            // - glDrawElements() !!!
-
-           
             
            
             glClearColor(0.2, 0.2, 0.2, 1.0);
             
             glClear(GL_COLOR_BUFFER_BIT);
             
-
+            glUseProgram(app->shader);
+            glCheckError();
             //glViewport(0, 0, app->displaySize.x,app->displaySize.y);
            
             glBindVertexArray(app->vertexArrayObj);
+            glCheckError();
+            glEnable(GL_BLEND);
+            glCheckError();
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glCheckError();
+            glUniform1i(app->shader, 0);//Invalid operation
+            glCheckError();
+            glActiveTexture(GL_TEXTURE0);
+            glCheckError();
+            glBindTexture(GL_TEXTURE_2D, app->diceTexIdx);//invalid operation
+            glCheckError();
             glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT,nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
             glCheckError();
 
