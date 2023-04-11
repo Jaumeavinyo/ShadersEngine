@@ -12,12 +12,17 @@
 #include "..\errorHandler.h"
 
 
+#include "..\VertexBuffer.h"
+#include "..\IndexBuffer.h"
+
 typedef glm::vec2  vec2;
 typedef glm::vec3  vec3;
 typedef glm::vec4  vec4;
 typedef glm::ivec2 ivec2;
 typedef glm::ivec3 ivec3;
 typedef glm::ivec4 ivec4;
+
+
 
 struct ShaderProgramSource {
     std::string vertexSrc;
@@ -57,6 +62,10 @@ enum Mode
     Mode_TexturedQuad,
     Mode_Count
 };
+
+unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
+unsigned int compileShader(unsigned int type, const std::string& source);
+ShaderProgramSource parseShader(std::string filePath);
 
 struct App
 {
@@ -121,6 +130,9 @@ struct App
     unsigned int vertexBufferObj;
     unsigned int vertexArrayObj;
     unsigned int indexBufferObj;
+
+
+   
 
 };
 

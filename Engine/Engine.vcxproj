@@ -22,6 +22,8 @@
     <ClCompile Include="Code\engine.cpp" />
     <ClCompile Include="Code\platform.cpp" />
     <ClCompile Include="errorHandler.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ThirdParty\glad\include\glad\glad.c" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui.cpp" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui_demo.cpp" />
@@ -31,11 +33,14 @@
     <ClCompile Include="ThirdParty\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="ThirdParty\stb\stb.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Code\engine.h" />
     <ClInclude Include="Code\platform.h" />
     <ClInclude Include="errorHandler.h" />
+    <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\glad.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\khrplatform.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h" />
@@ -47,6 +52,7 @@
     <ClInclude Include="ThirdParty\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\stb\stb_image.h" />
+    <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.shader" />

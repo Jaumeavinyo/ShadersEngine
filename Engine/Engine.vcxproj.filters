@@ -19,6 +19,9 @@
     <Filter Include="Engine\resources">
       <UniqueIdentifier>{3def1069-c6bb-4c28-9448-edd1c05ae5a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\OpenGLAbstraction">
+      <UniqueIdentifier>{f3631696-fc12-48ba-916d-679f5a964f82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ThirdParty\imgui-docking\imgui.cpp">
@@ -56,6 +59,15 @@
     </ClCompile>
     <ClCompile Include="errorHandler.cpp">
       <Filter>Engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>Engine\OpenGLAbstraction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +112,15 @@
     </ClInclude>
     <ClInclude Include="errorHandler.h">
       <Filter>Engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
