@@ -5,7 +5,7 @@ class IndexBuffer
 {
 public:
 	IndexBuffer(const unsigned int* data,unsigned int count);
-	
+	IndexBuffer() {};
 	~IndexBuffer();
 
 	void bind()const;

@@ -9,6 +9,7 @@ class VertexArray
 {
 public:
 	VertexArray();
+	
 	~VertexArray();
 
 private:

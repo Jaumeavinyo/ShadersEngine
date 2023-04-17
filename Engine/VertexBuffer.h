@@ -8,6 +8,7 @@ class VertexBuffer
 {
 public:
 	VertexBuffer(const void* data, unsigned int size);
+	VertexBuffer() { m_RendererID = 0; };
 	~VertexBuffer();
 
 	void bind()const;

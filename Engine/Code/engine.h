@@ -14,6 +14,10 @@
 
 #include "..\VertexBuffer.h"
 #include "..\IndexBuffer.h"
+#include "..\VertexArray.h"
+
+
+
 
 typedef glm::vec2  vec2;
 typedef glm::vec3  vec3;
@@ -106,11 +110,15 @@ struct App
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
 
-    // VAO object to link our screen filling quad with our textured quad shader
-    GLuint vao;
-
-
    
+
+    VertexArray va;
+    VertexBufferLayout attrLayout;
+
+
+    VertexBuffer vb;
+    IndexBuffer ib;
+  
 
     //MY OWN DATA
     float positions[8] = {

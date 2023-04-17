@@ -248,7 +248,7 @@ int main()
 
         // Render
         Render(&app);
-        int a = 2;
+       
         // ImGui Render
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
