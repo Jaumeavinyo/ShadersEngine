@@ -15,6 +15,7 @@
 #include <sstream>
 #include "..\VertexBuffer.h"
 #include "..\IndexBuffer.h"
+#include "..\VertexArray.h"
 
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
@@ -317,29 +318,18 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
+     
+            /*glGenVertexArrays(1, &app->vao);
+            glBindVertexArray(app->vao);*/
 
-
-            //________çç
-
-            //BUFFER_0BJECT
-
+            VertexArray va;
             VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
 
-            //VAO
-            glGenVertexArrays(1, &app->vertexArrayObj);
-            glCheckError();
-            glBindVertexArray(app->vertexArrayObj);
-            glCheckError();
-            glEnableVertexAttribArray(0);//enable attr 0, created avobe
-            glCheckError();
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);//this bounds to the currently binded buffer: app->vertexBufferObj
-            glCheckError();
-
-
-            //IBO
-
+            VertexBufferLayout layout;
+            layout.Push<float>(2);
+            va.addBuffer(vb, layout);
+               
             IndexBuffer ib(app->indices, 6);
-
 
             //unbind all, order is important
             glBindVertexArray(0);
@@ -370,7 +360,7 @@ void Render(App* app)
 
             //glViewport(0, 0, app->displaySize.x,app->displaySize.y);
            
-            glBindVertexArray(app->vertexArrayObj);
+            va.Bind();
             ib.bind();
             glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT,nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
             glCheckError();

@@ -69,6 +69,9 @@
     <ClCompile Include="IndexBuffer.cpp">
       <Filter>Engine\OpenGLAbstraction</Filter>
     </ClCompile>
+    <ClCompile Include="VertexArray.cpp">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h">
@@ -120,6 +123,12 @@
       <Filter>Engine\resources</Filter>
     </ClInclude>
     <ClInclude Include="IndexBuffer.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexArray.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBufferLayout.h">
       <Filter>Engine\OpenGLAbstraction</Filter>
     </ClInclude>
   </ItemGroup>

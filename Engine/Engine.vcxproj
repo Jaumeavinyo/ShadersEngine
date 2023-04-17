@@ -33,6 +33,7 @@
     <ClCompile Include="ThirdParty\imgui-docking\imgui_tables.cpp" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="ThirdParty\stb\stb.cpp" />
+    <ClCompile Include="VertexArray.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -52,7 +53,9 @@
     <ClInclude Include="ThirdParty\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\stb\stb_image.h" />
+    <ClInclude Include="VertexArray.h" />
     <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="VertexBufferLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.shader" />

@@ -23,6 +23,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "..\VertexBufferLayout.h"
+
 #define WINDOW_TITLE  "Advanced Graphics Programming"
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
@@ -246,7 +248,7 @@ int main()
 
         // Render
         Render(&app);
-
+        int a = 2;
         // ImGui Render
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
