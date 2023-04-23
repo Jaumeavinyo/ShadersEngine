@@ -296,31 +296,24 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
 void Init(App* app)
 {
   
-    app->va = VertexArray();
-    app->vb = VertexBuffer(app->positions, 4 * 2 * sizeof(float));
+  
 
-    app->attrLayout.Push<float>(2);
-    app->va.addBuffer(app->vb, app->attrLayout);
+    ////SHADER
+    //app->shaderProgramsSrc = parseShader("Basic.shader");
+    //app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+    //glUseProgram(app->shader);
+    //glCheckError();
 
-    app->ib = IndexBuffer(app->indices, 6);
-
-
-    //SHADER
-    app->shaderProgramsSrc = parseShader("Basic.shader");
-    app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    glUseProgram(app->shader);
-    glCheckError();
-
-    int location = glGetUniformLocation(app->shader, "u_Color");
-    assert(location != -1);
-    glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
-    //!SHADER
+    //int location = glGetUniformLocation(app->shader, "u_Color");
+    //assert(location != -1);
+    //glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+    ////!SHADER
     
     
     //unbind all, order is important
-    app->va.unBind();
+   /* app->va.unBind();
     app->vb.unbind();
-    app->ib.unbind();
+    app->ib.unbind();*/
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -339,59 +332,42 @@ void Render(App* app)
         case Mode_TexturedQuad:
         {
      
+            VertexArray va;
+            VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
 
+            VertexBufferLayout attrLayout;
+            attrLayout.Push<float>(2);
+            va.addBuffer(vb, attrLayout);
 
-            //VertexArray va;
-            //VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
+            IndexBuffer ib(app->indices, 6);
 
-            //VAO
-            /*glGenVertexArrays(1, &app->vertexArrayObj);
+            //SHADER
+            app->shaderProgramsSrc = parseShader("Basic.shader");
+            app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+            glUseProgram(app->shader);
             glCheckError();
-            glBindVertexArray(app->vertexArrayObj);
-            glCheckError();
-            glEnableVertexAttribArray(0);//enable attr 0, created avobe
-            glCheckError();
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);//this bounds to the currently binded buffer: app->vertexBufferObj
-            glCheckError();
-            */
 
-           
-            //attrLayout.Push<float>(2);
-            //va.addBuffer(vb, attrLayout);
-               
-            //IndexBuffer ib(app->indices, 6);
-
-            //unbind all, order is important
-            //glBindVertexArray(0);
-            //glCheckError();
-            //glBindBuffer(GL_ARRAY_BUFFER, 0);
-            //glCheckError();
-            //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            //glCheckError();
-
-            //app->shaderProgramsSrc = parseShader("Basic.shader");
-            //app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-            //glUseProgram(app->shader);
-            //glCheckError();
-
-            //int location = glGetUniformLocation(app->shader, "u_Color");
-            //assert(location != -1);
-            //glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
-
-
-            ////_________
-
+            int location = glGetUniformLocation(app->shader, "u_Color");
+            assert(location != -1);
+            glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+            //!SHADER
         
            
-            //glClearColor(0.2, 0.2, 0.2, 1.0);
+            va.unBind();
+            glUseProgram(0);
+            vb.unbind();
+            ib.unbind();
+
+
+            glClearColor(0.2, 0.2, 0.2, 1.0);
             //
-            //glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
             //
 
             //
-            //glBindVertexArray(app->vertexArrayObj);
-            //app->va.Bind();
-            //app->ib.bind();
+           
+            va.Bind();
+            ib.bind();
             //glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT,nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
             //glCheckError();
 

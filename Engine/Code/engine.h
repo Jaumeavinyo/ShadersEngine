@@ -112,12 +112,11 @@ struct App
 
    
 
-    VertexArray va;
-    VertexBufferLayout attrLayout;
+ 
+    
 
 
-    VertexBuffer vb;
-    IndexBuffer ib;
+ 
   
 
     //MY OWN DATA
