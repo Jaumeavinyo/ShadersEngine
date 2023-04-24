@@ -1,9 +1,9 @@
 #ifndef GAME_OBJECT_H_
 #define GAME_OBJECT_H_
-#include "Component.h"
+
 #include <vector>
 
-
+class Component;
 
 class GameObject
 {
