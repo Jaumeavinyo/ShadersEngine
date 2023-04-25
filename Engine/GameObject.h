@@ -3,7 +3,7 @@
 
 #include <vector>
 
-class Component;
+#include "Component.h"
 
 class GameObject
 {
@@ -11,8 +11,11 @@ public:
 	GameObject();
 	~GameObject();
 
-	Component* getComponent(unsigned int i) { return GObjComponents[i]; }
-	
+	Component* getComponent(unsigned int i)const { return GObjComponents[i]; }
+	void addComponent(Component* component);
+
+
+	void Update();
 private:
 
 	std::vector<Component*> GObjComponents;

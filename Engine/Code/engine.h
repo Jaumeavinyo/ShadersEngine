@@ -16,6 +16,7 @@
 #include "..\IndexBuffer.h"
 #include "..\VertexArray.h"
 
+#include "..\MeshComponent.h"
 
 
 
@@ -131,7 +132,7 @@ struct App
     unsigned int indexBufferObj;
 
 
-   
+    std::vector<GameObject*> gameObjects;
 
 };
 

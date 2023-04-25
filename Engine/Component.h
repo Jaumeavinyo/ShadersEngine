@@ -1,8 +1,12 @@
 #ifndef COMPONENT_H_
 #define COMPONENT_H_
 
-#include "GameObject.h"
+
 #include <iostream>
+
+
+
+class GameObject;
 
 class Component
 {

@@ -295,25 +295,42 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
 
 void Init(App* app)
 {
-  
-  
 
-    ////SHADER
-    //app->shaderProgramsSrc = parseShader("Basic.shader");
-    //app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    //glUseProgram(app->shader);
-    //glCheckError();
 
-    //int location = glGetUniformLocation(app->shader, "u_Color");
-    //assert(location != -1);
-    //glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
-    ////!SHADER
-    
-    
-    //unbind all, order is important
-   /* app->va.unBind();
-    app->vb.unbind();
-    app->ib.unbind();*/
+    app->gameObjects.push_back(new GameObject());
+
+
+    Mesh* mesh = new Mesh();
+    mesh->vb = VertexBuffer(app->positions, 4 * 2 * sizeof(float));
+    mesh->attrLayout.Push<float>(2);
+    mesh->va.addBuffer(mesh->vb, mesh->attrLayout);
+    mesh->ib = IndexBuffer(app->indices, 6);
+
+
+    //SHADER
+    app->shaderProgramsSrc = parseShader("Basic.shader");
+    app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+    glUseProgram(app->shader);
+    glCheckError();
+
+    int location = glGetUniformLocation(app->shader, "u_Color");
+    assert(location != -1);
+    glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+    //!SHADER
+
+
+    mesh->va.unBind();
+    glUseProgram(0);
+    mesh->vb.unbind();
+    mesh->ib.unbind();
+
+
+    Material* mat = new Material();
+  
+    std::string name = "MeshComponent";
+    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name,mesh,mat);
+
+    app->gameObjects[0]->addComponent(meshComp);
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -323,6 +340,10 @@ void Init(App* app)
 void Update(App* app)
 {
     // You can handle app->input keyboard/mouse here
+
+    for (int i = 0; i < app->gameObjects.size(); i++) {
+        app->gameObjects[i]->Update();
+    }
 }
 
 void Render(App* app)
@@ -331,45 +352,17 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-     
-            VertexArray va;
-            VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
-
-            VertexBufferLayout attrLayout;
-            attrLayout.Push<float>(2);
-            va.addBuffer(vb, attrLayout);
-
-            IndexBuffer ib(app->indices, 6);
-
-            //SHADER
-            app->shaderProgramsSrc = parseShader("Basic.shader");
-            app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-            glUseProgram(app->shader);
-            glCheckError();
-
-            int location = glGetUniformLocation(app->shader, "u_Color");
-            assert(location != -1);
-            glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
-            //!SHADER
-        
-           
-            va.unBind();
-            glUseProgram(0);
-            vb.unbind();
-            ib.unbind();
-
-
             glClearColor(0.2, 0.2, 0.2, 1.0);
-            //
-            glClear(GL_COLOR_BUFFER_BIT);
-            //
-
-            //
-           
-            va.Bind();
-            ib.bind();
-            //glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT,nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
-            //glCheckError();
+            for (int i = 0; i < app->gameObjects.size(); i++) {
+                if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
+                    MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
+                    meshComp->getMesh()->va.Bind();
+                    meshComp->getMesh()->ib.bind();
+                    //glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+                    glCheckError();
+                }
+            }
+            
 
           
         }
@@ -379,3 +372,41 @@ void Render(App* app)
     }
 }
 
+//VertexArray va;
+//VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
+//
+//VertexBufferLayout attrLayout;
+//attrLayout.Push<float>(2);
+//va.addBuffer(vb, attrLayout);
+//
+//IndexBuffer ib(app->indices, 6);
+//
+////SHADER
+//app->shaderProgramsSrc = parseShader("Basic.shader");
+//app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+//glUseProgram(app->shader);
+//glCheckError();
+//
+//int location = glGetUniformLocation(app->shader, "u_Color");
+//assert(location != -1);
+//glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+////!SHADER
+//
+//
+//va.unBind();
+//glUseProgram(0);
+//vb.unbind();
+//ib.unbind();
+//
+//
+//glClearColor(0.2, 0.2, 0.2, 1.0);
+////
+//glClear(GL_COLOR_BUFFER_BIT);
+////
+//
+////
+//
+//va.Bind();
+//ib.bind();
+//glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+//glCheckError();
