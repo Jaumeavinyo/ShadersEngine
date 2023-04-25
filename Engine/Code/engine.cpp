@@ -302,9 +302,11 @@ void Init(App* app)
 
     Mesh* mesh = new Mesh();
     mesh->vb = VertexBuffer(app->positions, 4 * 2 * sizeof(float));
+    mesh->ib = IndexBuffer(app->indices, 6);
+    mesh->va = VertexArray();
     mesh->attrLayout.Push<float>(2);
     mesh->va.addBuffer(mesh->vb, mesh->attrLayout);
-    mesh->ib = IndexBuffer(app->indices, 6);
+    
 
 
     //SHADER
@@ -319,10 +321,10 @@ void Init(App* app)
     //!SHADER
 
 
-    mesh->va.unBind();
-    glUseProgram(0);
-    mesh->vb.unbind();
-    mesh->ib.unbind();
+    //mesh->va.unBind();
+    //glUseProgram(0);
+    /*mesh->vb.unbind();
+    mesh->ib.unbind();*/
 
 
     Material* mat = new Material();
@@ -331,6 +333,11 @@ void Init(App* app)
     MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name,mesh,mat);
 
     app->gameObjects[0]->addComponent(meshComp);
+
+    glUseProgram(0);
+    meshComp->getMesh()->va.unBind();
+    meshComp->getMesh()->vb.unbind();
+    meshComp->getMesh()->ib.unbind();
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -352,13 +359,14 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
+            glUseProgram(app->shader);
             glClearColor(0.2, 0.2, 0.2, 1.0);
             for (int i = 0; i < app->gameObjects.size(); i++) {
                 if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
                     MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
                     meshComp->getMesh()->va.Bind();
                     meshComp->getMesh()->ib.bind();
-                    //glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+                    glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
                     glCheckError();
                 }
             }
