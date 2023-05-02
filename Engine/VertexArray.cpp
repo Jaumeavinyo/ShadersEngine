@@ -8,7 +8,9 @@ VertexArray::VertexArray()
 {
     glGenVertexArrays(1, &m_RendererID);
     glCheckError();
-   
+    if (m_RendererID == 0) {
+        std::cerr << "Error: glGenVertexArrays() failed to generate a valid ID" << std::endl;
+    }
 }
 
 
@@ -19,7 +21,7 @@ VertexArray::~VertexArray()
     glCheckError();
 }
 
-void VertexArray::addBuffer(const VertexBuffer vb, const VertexBufferLayout& layout)
+void VertexArray::addBuffer(const VertexBuffer &vb, const VertexBufferLayout& layout)
 {
     Bind();
 	vb.bind();
@@ -31,18 +33,21 @@ void VertexArray::addBuffer(const VertexBuffer vb, const VertexBufferLayout& lay
        
         //const VertexBufferElement& element = elements[i];
         const auto& element = elements[i];
-        glEnableVertexAttribArray(i);
-        glCheckError();
         glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.getStride(), (const void*)offset);//this bounds to the currently binded buffer: app->vertexBufferObj
         glCheckError();
+        glEnableVertexAttribArray(i);
+        glCheckError();
+
         offset += element.count * VertexBufferElement::getSizeOfType(element.type);
     }
 }
 
 void VertexArray::Bind()const{
-    glBindVertexArray(m_RendererID);
     glCheckError();
-
+    if (m_RendererID != 0) {
+        glBindVertexArray(m_RendererID);
+        glCheckError();
+    }
 }
 
 

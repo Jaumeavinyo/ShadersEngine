@@ -13,6 +13,7 @@ public:
 
 	void bind()const;
 	void unbind()const;
+	void bindAndSetvb(const void* data, unsigned int size)const;
 
 
 private:

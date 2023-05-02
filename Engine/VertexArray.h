@@ -17,7 +17,7 @@ private:
 
 
 public:
-	void addBuffer(const VertexBuffer vb, const VertexBufferLayout& layout);
+	void addBuffer(const VertexBuffer &vb, const VertexBufferLayout& layout);
 	void Bind()const;
 	void unBind()const;
 };

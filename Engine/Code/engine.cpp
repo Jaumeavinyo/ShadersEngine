@@ -299,14 +299,20 @@ void Init(App* app)
 
     app->gameObjects.push_back(new GameObject());
 
-
-    Mesh* mesh = new Mesh();
-    mesh->vb = VertexBuffer(app->positions, 4 * 2 * sizeof(float));
-    mesh->ib = IndexBuffer(app->indices, 6);
-    mesh->va = VertexArray();
-    mesh->attrLayout.Push<float>(2);
-    mesh->va.addBuffer(mesh->vb, mesh->attrLayout);
-    
+    //çççççççççççççç
+    // ..:: Initialization code :: ..
+    // 1. bind Vertex Array Object
+    //glBindVertexArray(VAO);
+    //// 2. copy our vertices array in a vertex buffer for OpenGL to use
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //// 3. copy our index array in a element buffer for OpenGL to use
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    //// 4. then set the vertex attributes pointers
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0);
+    //++++++++++++++
 
 
     //SHADER
@@ -321,10 +327,29 @@ void Init(App* app)
     //!SHADER
 
 
-    //mesh->va.unBind();
-    //glUseProgram(0);
-    /*mesh->vb.unbind();
-    mesh->ib.unbind();*/
+
+    Mesh* mesh = new Mesh();
+    
+
+
+    VertexArray va;
+    VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    va.addBuffer(vb, layout);
+
+    IndexBuffer ib(app->indices, 6);
+
+    mesh->attrLayout = layout;
+    mesh->va = va;
+    mesh->ib = ib;
+    mesh->vb = vb;
+
+
+    mesh->va.unBind();
+    glUseProgram(0);
+    mesh->vb.unbind();
+    mesh->ib.unbind();
 
 
     Material* mat = new Material();
@@ -334,10 +359,6 @@ void Init(App* app)
 
     app->gameObjects[0]->addComponent(meshComp);
 
-    glUseProgram(0);
-    meshComp->getMesh()->va.unBind();
-    meshComp->getMesh()->vb.unbind();
-    meshComp->getMesh()->ib.unbind();
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -360,14 +381,18 @@ void Render(App* app)
         case Mode_TexturedQuad:
         {
             glUseProgram(app->shader);
+            glCheckError();
             glClearColor(0.2, 0.2, 0.2, 1.0);
+            glCheckError();
             for (int i = 0; i < app->gameObjects.size(); i++) {
                 if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
                     MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-                    meshComp->getMesh()->va.Bind();
-                    meshComp->getMesh()->ib.bind();
-                    glDrawElements(GL_TRIANGLES, 6/*num of indices*/, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+                    meshComp->getVA().Bind();
+                    meshComp->getIB().bind();
+                    glDrawElements(GL_TRIANGLES, meshComp->getIB().getCount(), GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
                     glCheckError();
+                    meshComp->getMesh()->va.unBind();
+                    meshComp->getMesh()->ib.unbind();
                 }
             }
             

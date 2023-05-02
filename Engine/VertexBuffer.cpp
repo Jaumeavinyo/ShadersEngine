@@ -11,6 +11,7 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int size){
     glCheckError();
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     glCheckError();
+    //unbind();//added
 }
 
 
@@ -21,7 +22,12 @@ VertexBuffer::~VertexBuffer(){
 }
 
 
-
+void VertexBuffer::bindAndSetvb(const void* data, unsigned int size)const {
+    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    glCheckError();
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glCheckError();
+}
 
 
 void VertexBuffer::bind()const {

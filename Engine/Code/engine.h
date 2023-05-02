@@ -110,7 +110,7 @@ struct App
 
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
-
+   
 
     //MY OWN DATA
     float positions[8] = {
