@@ -124,9 +124,7 @@ struct App
 
     ShaderProgramSource shaderProgramsSrc;
     unsigned int shader;
-    unsigned int vertexBufferObj;
-    unsigned int vertexArrayObj;
-    unsigned int indexBufferObj;
+
 
 
     std::vector<GameObject*> gameObjects;
