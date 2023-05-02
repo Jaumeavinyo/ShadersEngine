@@ -12,9 +12,6 @@
 #include "..\errorHandler.h"
 
 
-#include "..\VertexBuffer.h"
-#include "..\IndexBuffer.h"
-#include "..\VertexArray.h"
 
 #include "..\MeshComponent.h"
 
@@ -111,9 +108,9 @@ struct App
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
    
-
+    
     //MY OWN DATA
-    float positions[8] = {
+    float vertex[8] = {
        -1.0f,-1.0f,
         1.0f,-1.0f,
         0.9f, 0.9f,

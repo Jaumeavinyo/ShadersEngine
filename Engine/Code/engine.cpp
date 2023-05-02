@@ -327,35 +327,19 @@ void Init(App* app)
     //!SHADER
 
 
-
-    Mesh* mesh = new Mesh();
-    
-
-
-    VertexArray va;
-    VertexBuffer vb(app->positions, 4 * 2 * sizeof(float));
     VertexBufferLayout layout;
-    layout.Push<float>(2);
-    va.addBuffer(vb, layout);
-
-    IndexBuffer ib(app->indices, 6);
-
-    mesh->attrLayout = layout;
-    mesh->va = va;
-    mesh->ib = ib;
-    mesh->vb = vb;
-
-
-    mesh->va.unBind();
+    layout.Push<float>(2);//first element of the stride: 2 floats
+    //layout.Push<int>(2);//example of second element of the stride, 2 ints;
+    Mesh* mesh = new Mesh(app->vertex, 4 * 2 * sizeof(float),layout,app->indices,6);
+    
     glUseProgram(0);
-    mesh->vb.unbind();
-    mesh->ib.unbind();
-
+    glCheckError();
 
     Material* mat = new Material();
-  
+
     std::string name = "MeshComponent";
-    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name,mesh,mat);
+    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
+    glCheckError();
 
     app->gameObjects[0]->addComponent(meshComp);
 
@@ -387,13 +371,12 @@ void Render(App* app)
             for (int i = 0; i < app->gameObjects.size(); i++) {
                 if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
                     MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-                    meshComp->getVA().Bind();
-                    meshComp->getIB().bind();
-                    glDrawElements(GL_TRIANGLES, meshComp->getIB().getCount(), GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+                    glBindVertexArray(meshComp->getMesh()->getVAO());
+
+                    glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
                     glCheckError();
-                    meshComp->getMesh()->va.unBind();
-                    meshComp->getMesh()->ib.unbind();
                 }
+                  
             }
             
 
@@ -401,7 +384,7 @@ void Render(App* app)
         }
             break;
 
-        default:;
+        
     }
 }
 

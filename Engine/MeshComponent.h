@@ -19,9 +19,7 @@ public:
 	Mesh* getMesh()const{return mesh;}
 	void Update();
 
-	VertexArray& getVA()const { return mesh->va; }
-	VertexBuffer& getVB()const { return mesh->vb; }
-	IndexBuffer& getIB()const { return mesh->ib; }
+	
 
 private:
 	bool render;

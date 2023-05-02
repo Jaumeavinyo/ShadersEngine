@@ -36,8 +36,10 @@ struct VertexBufferElement {
 class VertexBufferLayout
 {
 public:
-	VertexBufferLayout() :m_Stride(0) {};
+	VertexBufferLayout() :m_Stride(0) {}
 	~VertexBufferLayout() {};
+
+
 
 private:
 	std::vector<VertexBufferElement> m_Elements;

@@ -1,12 +1,30 @@
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
 
-struct Mesh
+#include "VertexBufferLayout.h"
+class Mesh
 {
-	VertexBufferLayout attrLayout;
+public:
+	Mesh(const void* VertexData, unsigned int VertexDataSize, const VertexBufferLayout& _layout, const unsigned int* IndexData, unsigned int IndexCount);
+	~Mesh();
 
-	VertexArray va;
-	VertexBuffer vb;
-	IndexBuffer ib;
+	void SetupBuffers();
+
+	unsigned int getVAO()const { return VAO; }
+	unsigned int getVBO()const { return VBO; }
+	unsigned int getIBO()const { return IBO; }
+
+	VertexBufferLayout layout;
+
+	
+	const void* vertexData;
+	unsigned int vertexDataSize;
+
+	const unsigned int* indexData;
+	unsigned int indexCount;
+
+
+private:
+
+	unsigned int VAO;
+	unsigned int VBO;
+	unsigned int IBO;
 };
