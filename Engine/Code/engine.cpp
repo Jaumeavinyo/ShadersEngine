@@ -15,6 +15,10 @@
 #include <sstream>
 
 
+#include "..\errorHandler.h"
+#include "..\MeshComponent.h"
+
+
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
     GLchar  infoLogBuffer[1024] = {};
@@ -327,21 +331,21 @@ void Init(App* app)
     //!SHADER
 
 
-    VertexBufferLayout layout;
-    layout.Push<float>(2);//first element of the stride: 2 floats
-    //layout.Push<int>(2);//example of second element of the stride, 2 ints;
-    Mesh* mesh = new Mesh(app->vertex, 4 * 2 * sizeof(float),layout,app->indices,6);
-    
-    glUseProgram(0);
-    glCheckError();
+    //VertexBufferLayout layout;
+    //layout.Push<float>(2);//first element of the stride: 2 floats
+    ////layout.Push<int>(2);//example of second element of the stride, 2 ints;
+    //Mesh* mesh = new Mesh(app->vertex, 4 * 2 * sizeof(float),layout,app->indices,6);
+    //
+    //glUseProgram(0);
+    //glCheckError();
 
-    Material* mat = new Material();
+    //Material* mat = new Material();
 
-    std::string name = "MeshComponent";
-    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
-    glCheckError();
+    //std::string name = "MeshComponent";
+    //MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
+    //glCheckError();
 
-    app->gameObjects[0]->addComponent(meshComp);
+    //app->gameObjects[0]->addComponent(meshComp);
 
 
     app->mode = Mode::Mode_TexturedQuad;
@@ -364,20 +368,20 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-            glUseProgram(app->shader);
-            glCheckError();
-            glClearColor(0.2, 0.2, 0.2, 1.0);
-            glCheckError();
-            for (int i = 0; i < app->gameObjects.size(); i++) {
-                if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
-                    MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-                    glBindVertexArray(meshComp->getMesh()->getVAO());
+            //glUseProgram(app->shader);
+            //glCheckError();
+            //glClearColor(0.2, 0.2, 0.2, 1.0);
+            //glCheckError();
+            //for (int i = 0; i < app->gameObjects.size(); i++) {
+            //    if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
+            //        MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
+            //        glBindVertexArray(meshComp->getMesh()->getVAO());
 
-                    glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
-                    glCheckError();
-                }
-                  
-            }
+            //        glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+            //        glCheckError();
+            //    }
+            //      
+            //}
             
 
           

@@ -5,13 +5,13 @@
 
 
 
-Mesh::Mesh(const void* _VertexData, unsigned int _VertexDataSize, const VertexBufferLayout& _layout, const unsigned int* _IndexData, unsigned int _IndexCount)
+Mesh::Mesh(std::vector<Vertex> _vertices, const VertexBufferLayout& _layout, const unsigned int* _IndexData, unsigned int _IndexCount,unsigned int _drawMode)
 {
 	layout = _layout;
-	vertexData = _VertexData;
-	vertexDataSize = _VertexDataSize;
+	vertices = _vertices;
 	indexData = _IndexData;
 	indexCount = _IndexCount;
+	drawMode = _drawMode;
 	SetupBuffers();
 }
 
@@ -30,17 +30,17 @@ void Mesh::SetupBuffers() {
 	glCheckError();
 
 	glBindVertexArray(VAO);
-	glCheckError();
+	//glCheckError();
 	// load data into vertex buffers
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glCheckError();
-	glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), drawMode);
 	glCheckError();
 
 	// load data into indices buffers
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 	glCheckError();
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(unsigned int), indexData, drawMode);
 	glCheckError();
 
 

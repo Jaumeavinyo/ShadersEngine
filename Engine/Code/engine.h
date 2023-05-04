@@ -8,12 +8,8 @@
 
 #include "platform.h"
 #include <glad/glad.h>
+#include "..\GameObject.h"
 
-#include "..\errorHandler.h"
-
-
-
-#include "..\MeshComponent.h"
 
 
 
@@ -53,9 +49,9 @@ struct Program
     u64                lastWriteTimestamp; // What is this for?
 };
 
-struct VertexV3V2 {
+struct Vertex {
     glm::vec3 pos;
-    glm::vec2 uv;
+    //glm::vec2 uv;
 };
 
 
@@ -108,6 +104,14 @@ struct App
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
    
+    std::vector<Vertex> vertices = {
+       {glm::vec3(-0.5,-0.5,0.0)/*,glm::vec2(0.0,0.0)*/},
+       {glm::vec3(0.5,-0.5,0.0)/*,glm::vec2(1.0,0.0)*/},
+       {glm::vec3(0.5,0.5,0.0)/*,glm::vec2(1.0,1.0)*/},
+       {glm::vec3(-0.5,0.5,0.0)/*,glm::vec2(0.0,1.0)*/}
+
+    };
+
     
     //MY OWN DATA
     float vertex[8] = {

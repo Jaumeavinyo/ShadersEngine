@@ -1,9 +1,10 @@
 
 #include "VertexBufferLayout.h"
+#include "Code/engine.h"
 class Mesh
 {
 public:
-	Mesh(const void* VertexData, unsigned int VertexDataSize, const VertexBufferLayout& _layout, const unsigned int* IndexData, unsigned int IndexCount);
+	Mesh(std::vector<Vertex> _vertices, const VertexBufferLayout& _layout, const unsigned int* IndexData, unsigned int IndexCount,unsigned int drawMode = GL_STATIC_DRAW);
 	~Mesh();
 
 	void SetupBuffers();
@@ -15,8 +16,7 @@ public:
 	VertexBufferLayout layout;
 
 	
-	const void* vertexData;
-	unsigned int vertexDataSize;
+	std::vector<Vertex> vertices;
 
 	const unsigned int* indexData;
 	unsigned int indexCount;
@@ -25,6 +25,8 @@ public:
 private:
 
 	unsigned int VAO;
+	unsigned int drawMode;
+
 	unsigned int VBO;
 	unsigned int IBO;
 };
