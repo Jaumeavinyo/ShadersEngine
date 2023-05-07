@@ -148,15 +148,25 @@ GLuint CreateTexture2DFromImage(Image image)
 
     GLuint texHandle;
     glGenTextures(1, &texHandle);
+    glCheckError();
     glBindTexture(GL_TEXTURE_2D, texHandle);
+    glCheckError();
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.size.x, image.size.y, 0, dataFormat, dataType, image.pixels);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glCheckError();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR/*GL_LINEAR_MIPMAP_LINEAR*/);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glCheckError();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glCheckError();
     glGenerateMipmap(GL_TEXTURE_2D);
+    glCheckError();
     glBindTexture(GL_TEXTURE_2D, 0);
+    glCheckError();
 
     return texHandle;
 }
@@ -303,21 +313,14 @@ void Init(App* app)
 
     app->gameObjects.push_back(new GameObject());
 
-    //çççççççççççççç
-    // ..:: Initialization code :: ..
-    // 1. bind Vertex Array Object
-    //glBindVertexArray(VAO);
-    //// 2. copy our vertices array in a vertex buffer for OpenGL to use
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //// 3. copy our index array in a element buffer for OpenGL to use
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    //// 4. then set the vertex attributes pointers
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    //glEnableVertexAttribArray(0);
-    //++++++++++++++
+    
 
+
+    VertexBufferLayout layout;
+    layout.Push<float>(3);//first element of the stride: 2 floats for position
+    layout.Push<float>(2);//second element 2 floats for uvg texcorrds
+    //layout.Push<int>(2);//example of second element of the stride, 2 ints;
+    Mesh* mesh = new Mesh(app->vertices, layout, app->indices, 6);
 
     //SHADER
     app->shaderProgramsSrc = parseShader("Basic.shader");
@@ -325,27 +328,27 @@ void Init(App* app)
     glUseProgram(app->shader);
     glCheckError();
 
-    int location = glGetUniformLocation(app->shader, "u_Color");
-    assert(location != -1);
-    glUniform4f(location, 1.0f, 0.2f, 0.2f, 1.0f);
+    int location1 = glGetUniformLocation(app->shader, "u_Texture");
+    assert(location1 != -1);
+    glUniform1i(location1, 0);
+   
     //!SHADER
+    glUseProgram(0);
+    glCheckError();
+    //TEXTURE LOADING
 
+    app->texID = LoadTexture2D(app, "WorkingDir/dice.png");
+    glActiveTexture(GL_TEXTURE0);
+    glCheckError();
+    
 
-    //VertexBufferLayout layout;
-    //layout.Push<float>(2);//first element of the stride: 2 floats
-    ////layout.Push<int>(2);//example of second element of the stride, 2 ints;
-    //Mesh* mesh = new Mesh(app->vertex, 4 * 2 * sizeof(float),layout,app->indices,6);
-    //
-    //glUseProgram(0);
-    //glCheckError();
+    Material* mat = new Material();
 
-    //Material* mat = new Material();
+    std::string name = "MeshComponent";
+    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
+    
 
-    //std::string name = "MeshComponent";
-    //MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
-    //glCheckError();
-
-    //app->gameObjects[0]->addComponent(meshComp);
+    app->gameObjects[0]->addComponent(meshComp);
 
 
     app->mode = Mode::Mode_TexturedQuad;
@@ -368,20 +371,27 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-            //glUseProgram(app->shader);
-            //glCheckError();
-            //glClearColor(0.2, 0.2, 0.2, 1.0);
-            //glCheckError();
-            //for (int i = 0; i < app->gameObjects.size(); i++) {
-            //    if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
-            //        MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-            //        glBindVertexArray(meshComp->getMesh()->getVAO());
+            glUseProgram(app->shader);
+            glCheckError();
+            glClearColor(0.2, 0.2, 0.2, 1.0);
+            glCheckError();
+            for (int i = 0; i < app->gameObjects.size(); i++) {
+                if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
+                    MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
+                    
+                    
+                    glBindTexture(GL_TEXTURE_2D,app->textures[app->texID].handle );
+                    glCheckError();
+                  /*  glActiveTexture(GL_TEXTURE0);
+                    glCheckError();*/
+                    glBindVertexArray(meshComp->getMesh()->getVAO());
+                    glCheckError();
 
-            //        glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
-            //        glCheckError();
-            //    }
-            //      
-            //}
+                    glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
+                    glCheckError();
+                }
+                  
+            }
             
 
           

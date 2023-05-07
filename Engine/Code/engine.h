@@ -46,12 +46,12 @@ struct Program
     GLuint             handle;
     std::string        filepath;
     std::string        programName;
-    u64                lastWriteTimestamp; // What is this for?
+    u64                lastWriteTimestamp; 
 };
 
 struct Vertex {
     glm::vec3 pos;
-    //glm::vec2 uv;
+    glm::vec2 uv;
 };
 
 
@@ -103,13 +103,14 @@ struct App
 
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
+
+    unsigned int texID;
    
     std::vector<Vertex> vertices = {
-       {glm::vec3(-0.5,-0.5,0.0)/*,glm::vec2(0.0,0.0)*/},
-       {glm::vec3(0.5,-0.5,0.0)/*,glm::vec2(1.0,0.0)*/},
-       {glm::vec3(0.5,0.5,0.0)/*,glm::vec2(1.0,1.0)*/},
-       {glm::vec3(-0.5,0.5,0.0)/*,glm::vec2(0.0,1.0)*/}
-
+       {glm::vec3(-0.5,-0.5,0.0),glm::vec2(0.0,0.0)},
+       {glm::vec3(0.5,-0.5,0.0),glm::vec2(1.0,0.0)},
+       {glm::vec3(0.5,0.5,0.0),glm::vec2(1.0,1.0)},
+       {glm::vec3(-0.5,0.5,0.0),glm::vec2(0.0,1.0)}
     };
 
     
