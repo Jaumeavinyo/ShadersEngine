@@ -17,7 +17,7 @@ public:
 
 	bool renderRequested()const { return render; }
 	Mesh* getMesh()const{return mesh;}
-	
+	Material* getMaterial()const { return material; }
 	
 	void Init();
 	void Update();

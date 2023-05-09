@@ -338,13 +338,15 @@ void Init(App* app)
     glCheckError();
 
 
+    Material* mat = new Material();
+
     //TEXTURE LOADING
-    app->texID = LoadTexture2D(app, "WorkingDir/dice.png");
+    mat->textureID = LoadTexture2D(app, "WorkingDir/dice.png");
     glActiveTexture(GL_TEXTURE0);
     glCheckError();
     //!TEXTURE LOADING
 
-    Material* mat = new Material();
+    
 
     std::string name = "MeshComponent";
     const char* resourcePath = "patrick.obj";
@@ -383,7 +385,7 @@ void Render(App* app)
                     MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
                     
                     
-                    glBindTexture(GL_TEXTURE_2D,app->textures[app->texID].handle );
+                    glBindTexture(GL_TEXTURE_2D,app->textures[meshComp->getMaterial()->textureID].handle );
                     glCheckError();
                     glBindVertexArray(meshComp->getMesh()->getVAO());
                     glCheckError();
