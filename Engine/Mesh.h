@@ -8,6 +8,7 @@ public:
 	~Mesh();
 
 	void SetupBuffers();
+	void SetupLayout();
 
 	unsigned int getVAO()const { return VAO; }
 	unsigned int getVBO()const { return VBO; }

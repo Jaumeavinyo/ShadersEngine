@@ -316,11 +316,10 @@ void Init(App* app)
     
 
 
-    VertexBufferLayout layout;
-    layout.Push<float>(3);//first element of the stride: 2 floats for position
-    layout.Push<float>(2);//second element 2 floats for uvg texcorrds
-    //layout.Push<int>(2);//example of second element of the stride, 2 ints;
-    Mesh* mesh = new Mesh(app->vertices, layout, app->indices, 6);
+    //VertexBufferLayout layout;
+    //layout.Push<float>(3);//first element of the stride: 2 floats for position
+    //layout.Push<float>(2);//second element 2 floats for uvg texcorrds
+    //Mesh* mesh = new Mesh(app->vertices, layout, app->indices, 6);
 
     //SHADER
     app->shaderProgramsSrc = parseShader("Basic.shader");
@@ -333,23 +332,27 @@ void Init(App* app)
     glUniform1i(location1, 0);
    
     //!SHADER
+    
+
     glUseProgram(0);
     glCheckError();
-    //TEXTURE LOADING
 
+
+    //TEXTURE LOADING
     app->texID = LoadTexture2D(app, "WorkingDir/dice.png");
     glActiveTexture(GL_TEXTURE0);
     glCheckError();
-    
+    //!TEXTURE LOADING
 
     Material* mat = new Material();
 
     std::string name = "MeshComponent";
-    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
+    const char* resourcePath = "patrick.obj";
+    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mat, resourcePath);
     
 
     app->gameObjects[0]->addComponent(meshComp);
-
+    dynamic_cast<MeshComponent*>(app->gameObjects[0]->getComponent(0))->Init();
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -382,8 +385,6 @@ void Render(App* app)
                     
                     glBindTexture(GL_TEXTURE_2D,app->textures[app->texID].handle );
                     glCheckError();
-                  /*  glActiveTexture(GL_TEXTURE0);
-                    glCheckError();*/
                     glBindVertexArray(meshComp->getMesh()->getVAO());
                     glCheckError();
 

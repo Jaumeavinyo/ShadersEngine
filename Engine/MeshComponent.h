@@ -10,21 +10,34 @@
 class MeshComponent : public Component
 {
 public:
-	MeshComponent(GameObject* parentGameObject, const std::string& componentName, Mesh* meshPtr, Material* materialPtr, bool _render = true)
-		: Component(parentGameObject, componentName), mesh(meshPtr), material(materialPtr), render(_render)
+	MeshComponent(GameObject* parentGameObject, const std::string& componentName,  Material* materialPtr, const char* _resourcePath,bool _render = true)
+		: Component(parentGameObject, componentName),  material(materialPtr), resourcePath(_resourcePath), render(_render)
 	{}
 	~MeshComponent() {};
 
 	bool renderRequested()const { return render; }
 	Mesh* getMesh()const{return mesh;}
+	
+	
+	void Init();
 	void Update();
 
-	
+	void Render();
+
+	void LoadvertexData(const char* resourcePath);
 
 private:
 	bool render;
 	Mesh* mesh;
 	Material* material;
 
+	std::vector<Vertex> vertices;
+	   
+	unsigned int indices[6];
+	VertexBufferLayout meshLayout;
+
+
+private:
+	const char* resourcePath;
 };
 #endif // !MESH_COMPONENT_H_
