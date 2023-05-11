@@ -16,7 +16,7 @@ public:
 	~MeshComponent() {};
 
 	bool renderRequested()const { return render; }
-	Mesh* getMesh()const{return mesh;}
+	Mesh* getMesh()const { return mesh; }
 	Material* getMaterial()const { return material; }
 	
 	void Init();
@@ -28,6 +28,7 @@ public:
 
 private:
 	bool render;
+	
 	Mesh* mesh;
 	Material* material;
 

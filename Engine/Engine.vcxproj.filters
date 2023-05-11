@@ -75,6 +75,12 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Engine\GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="GeometryLoader.cpp">
+      <Filter>Engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Dummy.cpp">
+      <Filter>Engine\resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h">
@@ -139,6 +145,15 @@
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryLoader.h">
+      <Filter>Engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Submesh.h">
+      <Filter>Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffers.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

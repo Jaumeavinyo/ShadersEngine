@@ -1,6 +1,9 @@
 
 #include "VertexBufferLayout.h"
+#include "Buffers.h"
 #include "Code/engine.h"
+#include "Submesh.h"
+
 class Mesh
 {
 public:
@@ -28,6 +31,12 @@ private:
 	unsigned int VAO;
 	unsigned int drawMode;
 
+	
+
+private: 
+	
 	unsigned int VBO;
 	unsigned int IBO;
+
+	std::vector<Submesh> submeshes;
 };

@@ -6,6 +6,7 @@ void MeshComponent::Init() {
 
 	printf("\n MeshComponent::Init()");
 	LoadvertexData(resourcePath);
+	
     mesh = new Mesh(vertices, meshLayout, indices, 6);
 
 
