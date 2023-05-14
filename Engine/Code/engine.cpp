@@ -196,12 +196,16 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
     glAttachShader(program, vs);
+    glCheckError();
     glAttachShader(program, fs);
+    glCheckError();
     glLinkProgram(program);
+    glCheckError();
 
     //HANDLE LINKING ERRORS
     int linkSuccess = GL_FALSE;
     glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
+    glCheckError();
 
     if (linkSuccess == GL_FALSE) {
         GLint logLength = 0;
@@ -230,10 +234,30 @@ void Init(App* app)
 
 
     app->gameObjects.push_back(new GameObject());
+    const char* patrickPath = "Patrick/Patrick.obj";
+    std::string name = "MeshComponent";
+    MeshComponent* meshComp = new MeshComponent(app,app->gameObjects[0], name, patrickPath);
+    app->gameObjects[0]->addComponent(meshComp);
+
+    //SHADER
+    app->shaderProgramsSrc = parseShader("Basic.shader");
+    app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+    glUseProgram(app->shader);
+    glCheckError();
+
+    int location1 = glGetUniformLocation(app->shader, "u_Texture");
+    assert(location1 != -1);
+    glUniform1i(location1, 0);
+
+    //!SHADER
+
+    glUseProgram(0);
+    glCheckError();
 
     
+    
 
-
+    
     //VertexBufferLayout layout;
     //layout.Push<float>(3);//first element of the stride: 2 floats for position
     //layout.Push<float>(2);//second element 2 floats for uvg texcorrds
@@ -288,12 +312,40 @@ void Update(App* app)
     }
 }
 
+unsigned int FindVao(Mesh* mesh, unsigned int submeshIndex, unsigned int progHandle) {
+    Submesh& submesh = mesh->submeshes[submeshIndex];
+    //try finding a VAO for this submesh/program
+    for (unsigned int i = 0; i < (u32)submesh.vaos.size(); i++) {
+        if (submesh.vaos[i].programHandle == progHandle) {
+            return submesh.vaos[i].handle;
+        }
+    }
+
+    unsigned int vaoHandle = 0;
+
+
+}
+
 void Render(App* app)
 {
     switch (app->mode)
     {
         case Mode_TexturedQuad:
         {
+
+            glUseProgram(app->shader);
+            glCheckError();
+            for (int i = 0; i < app->gameObjects.size(); i++) {
+                for (int j = 0; j < app->gameObjects[i]->GObjComponents.size();j++) {
+                    if (app->gameObjects[i]->getComponent(j)->getName() == "MeshComponent") {
+                        MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(j));
+
+                        for (int k = 0; k < meshComp->getMesh()->submeshes.size(); k++) {
+                            unsigned int vao = FindVao(meshComp->getMesh(), k, app->shader);
+                        }
+                    }
+                }
+            }
             //glUseProgram(app->shader);
             //glCheckError();
             //glClearColor(0.2, 0.2, 0.2, 1.0);

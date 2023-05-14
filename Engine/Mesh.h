@@ -7,10 +7,10 @@
 class Mesh
 {
 public:
-	Mesh(std::vector<Vertex> _vertices, const VertexBufferLayout& _layout, const unsigned int* IndexData, unsigned int IndexCount,unsigned int drawMode = GL_STATIC_DRAW);
+	Mesh( unsigned int drawMode = GL_STATIC_DRAW);
 	~Mesh();
 
-	void SetupBuffers();
+	void SetupSubmeshVAOs();
 	void SetupLayout();
 	void CreateVAOforSubmeshes();
 	
@@ -18,12 +18,6 @@ public:
 	unsigned int getIBO()const { return IBOhandle; }
 
 	std::vector<unsigned int>* getSubMeshMaterialsIDx() { return &SubmeshMaterialsIDx; }
-
-	
-	std::vector<Vertex> vertices;
-	
-	const unsigned int* indexData;
-	unsigned int indexCount;
 
 
 private:

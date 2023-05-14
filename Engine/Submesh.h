@@ -14,6 +14,7 @@ public:
 	unsigned int vertexOffset;
 	unsigned int indexOffset;
 	
+	
 	std::vector<VAO> vaos;
 	
 	
