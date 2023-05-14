@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include "VertexBufferLayout.h"
-
+#include "Material.h"
 class Submesh
 {
 public:
@@ -15,5 +15,8 @@ public:
 	unsigned int indexOffset;
 	
 	std::vector<VAO> vaos;
+	
+	
+	unsigned int materialID;//position in material type vector of mesh.h
 };
 

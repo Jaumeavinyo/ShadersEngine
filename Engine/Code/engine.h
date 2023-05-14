@@ -10,7 +10,7 @@
 #include <glad/glad.h>
 #include "..\GameObject.h"
 
-
+#include "..\Texture.h"
 
 
 typedef glm::vec2  vec2;
@@ -27,19 +27,7 @@ struct ShaderProgramSource {
     std::string fragmentSrc;
 };
 
-struct Image
-{
-    void* pixels;
-    ivec2 size;
-    i32   nchannels;
-    i32   stride;
-};
 
-struct Texture
-{
-    GLuint      handle;
-    std::string filepath;
-};
 
 struct Program
 {

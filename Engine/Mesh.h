@@ -12,31 +12,32 @@ public:
 
 	void SetupBuffers();
 	void SetupLayout();
+	void CreateVAOforSubmeshes();
+	
+	unsigned int getVBO()const { return VBOhandle; }
+	unsigned int getIBO()const { return IBOhandle; }
 
-	unsigned int getVAO()const { return VAO; }
-	unsigned int getVBO()const { return VBO; }
-	unsigned int getIBO()const { return IBO; }
-
-	VertexBufferLayout layout;
+	std::vector<unsigned int>* getSubMeshMaterialsIDx() { return &SubmeshMaterialsIDx; }
 
 	
 	std::vector<Vertex> vertices;
-
+	
 	const unsigned int* indexData;
 	unsigned int indexCount;
 
 
 private:
 
-	unsigned int VAO;
 	unsigned int drawMode;
 
 	
 
-private: 
+public:
 	
-	unsigned int VBO;
-	unsigned int IBO;
+	unsigned int VBOhandle;
+	unsigned int IBOhandle;
 
+	std::vector<unsigned int> SubmeshMaterialsIDx;
+	std::vector<Material> materials;
 	std::vector<Submesh> submeshes;
 };

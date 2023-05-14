@@ -17,7 +17,7 @@ public:
 
 	bool renderRequested()const { return render; }
 	Mesh* getMesh()const { return mesh; }
-	Material* getMaterial()const { return material; }
+	
 	
 	void Init();
 	void Update();
@@ -33,7 +33,8 @@ private:
 	Material* material;
 
 	std::vector<Vertex> vertices;
-	   
+	
+
 	unsigned int indices[6];
 	VertexBufferLayout meshLayout;
 

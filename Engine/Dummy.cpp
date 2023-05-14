@@ -187,14 +187,16 @@ u32 LoadModel(App* app, const char* filename)
         return UINT32_MAX;
     }
 
-    app->meshes.push_back(Mesh{});
+    //I already have space to store this data inside meshcomponent
+
+    /*app->meshes.push_back(Mesh{});
     Mesh& mesh = app->meshes.back();
     u32 meshIdx = (u32)app->meshes.size() - 1u;
 
     app->models.push_back(Model{});
     Model& model = app->models.back();
     model.meshIdx = meshIdx;
-    u32 modelIdx = (u32)app->models.size() - 1u;
+    u32 modelIdx = (u32)app->models.size() - 1u;*/
 
     String directory = GetDirectoryPart(MakeString(filename));
 
