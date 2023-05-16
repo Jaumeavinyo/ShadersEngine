@@ -23,9 +23,10 @@
     <ClCompile Include="Code\platform.cpp" />
     <ClCompile Include="errorHandler.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="GeometryLoader.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="textureLoader.cpp" />
     <ClCompile Include="ThirdParty\glad\include\glad\glad.c" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui.cpp" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui_demo.cpp" />
@@ -42,10 +43,11 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="errorHandler.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="GeometryLoader.h" />
+    <ClInclude Include="GLclassesAndStructs.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\glad.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\khrplatform.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h" />
@@ -58,6 +60,7 @@
     <ClInclude Include="ThirdParty\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\stb\stb_image.h" />
     <ClInclude Include="VertexBufferLayout.h" />
+    <ClInclude Include="VertexShaderLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.shader" />

@@ -7,8 +7,7 @@
 
 #include "engine.h"
 #include <imgui.h>
-#include <stb_image.h>
-#include <stb_image_write.h>
+
 
 #include <iostream>
 #include <fstream>
@@ -16,7 +15,7 @@
 
 
 #include "..\errorHandler.h"
-#include "..\MeshComponent.h"
+
 
 
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
@@ -112,90 +111,6 @@ u32 LoadProgram(App* app, const char* filepath, const char* programName)
     return app->programs.size() - 1;
 }
 
-Image LoadImage(const char* filename)
-{
-    Image img = {};
-    stbi_set_flip_vertically_on_load(true);
-    img.pixels = stbi_load(filename, &img.size.x, &img.size.y, &img.nchannels, 0);
-    if (img.pixels)
-    {
-        img.stride = img.size.x * img.nchannels;
-    }
-    else
-    {
-        ELOG("Could not open file %s", filename);
-    }
-    return img;
-}
-
-void FreeImage(Image image)
-{
-    stbi_image_free(image.pixels);
-}
-
-GLuint CreateTexture2DFromImage(Image image)
-{
-    GLenum internalFormat = GL_RGB8;
-    GLenum dataFormat     = GL_RGB;
-    GLenum dataType       = GL_UNSIGNED_BYTE;
-
-    switch (image.nchannels)
-    {
-        case 3: dataFormat = GL_RGB; internalFormat = GL_RGB8; break;
-        case 4: dataFormat = GL_RGBA; internalFormat = GL_RGBA8; break;
-        default: ELOG("LoadTexture2D() - Unsupported number of channels");
-    }
-
-    GLuint texHandle;
-    glGenTextures(1, &texHandle);
-    glCheckError();
-    glBindTexture(GL_TEXTURE_2D, texHandle);
-    glCheckError();
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.size.x, image.size.y, 0, dataFormat, dataType, image.pixels);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR/*GL_LINEAR_MIPMAP_LINEAR*/);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glCheckError();
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glCheckError();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glCheckError();
-
-    return texHandle;
-}
-
-u32 LoadTexture2D(App* app, const char* filepath)
-{
-    for (u32 texIdx = 0; texIdx < app->textures.size(); ++texIdx)
-        if (app->textures[texIdx].filepath == filepath)
-            return texIdx;
-
-    Image image = LoadImage(filepath);
-
-    if (image.pixels)
-    {
-        Texture tex = {};
-        tex.handle = CreateTexture2DFromImage(image);
-        tex.filepath = filepath;
-
-        u32 texIdx = app->textures.size();
-        app->textures.push_back(tex);
-
-        FreeImage(image);
-        return texIdx;
-    }
-    else
-    {
-        return UINT32_MAX;
-    }
-}
 
 void Gui(App* app)
 {
@@ -307,50 +222,25 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     return program;
 }
 
+//returns the program position in programs array
+unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSource shaderProgramsSrc) {
+    app->shaderProgramsSrc = parseShader(filePath);
+    Program program = {};
+    program.handle = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+    program.filepath = filePath;
+    program.programName = filePath;
+    program.lastWriteTimestamp = GetFileLastWriteTimestamp(filePath.c_str());
+    app->programs.push_back(program);
+
+    return app->programs.size() - 1;
+}
+
+
 void Init(App* app)
 {
 
 
-    app->gameObjects.push_back(new GameObject());
-
-    
-
-
-    VertexBufferLayout layout;
-    layout.Push<float>(3);//first element of the stride: 2 floats for position
-    layout.Push<float>(2);//second element 2 floats for uvg texcorrds
-    //layout.Push<int>(2);//example of second element of the stride, 2 ints;
-    Mesh* mesh = new Mesh(app->vertices, layout, app->indices, 6);
-
-    //SHADER
-    app->shaderProgramsSrc = parseShader("Basic.shader");
-    app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    glUseProgram(app->shader);
-    glCheckError();
-
-    int location1 = glGetUniformLocation(app->shader, "u_Texture");
-    assert(location1 != -1);
-    glUniform1i(location1, 0);
-   
-    //!SHADER
-    glUseProgram(0);
-    glCheckError();
-    //TEXTURE LOADING
-
-    app->texID = LoadTexture2D(app, "WorkingDir/dice.png");
-    glActiveTexture(GL_TEXTURE0);
-    glCheckError();
-    
-
-    Material* mat = new Material();
-
-    std::string name = "MeshComponent";
-    MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mesh, mat);
-    
-
-    app->gameObjects[0]->addComponent(meshComp);
-
-
+ 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
@@ -371,27 +261,6 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-            glUseProgram(app->shader);
-            glCheckError();
-            glClearColor(0.2, 0.2, 0.2, 1.0);
-            glCheckError();
-            for (int i = 0; i < app->gameObjects.size(); i++) {
-                if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
-                    MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-                    
-                    
-                    glBindTexture(GL_TEXTURE_2D,app->textures[app->texID].handle );
-                    glCheckError();
-                  /*  glActiveTexture(GL_TEXTURE0);
-                    glCheckError();*/
-                    glBindVertexArray(meshComp->getMesh()->getVAO());
-                    glCheckError();
-
-                    glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
-                    glCheckError();
-                }
-                  
-            }
             
 
           

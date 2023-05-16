@@ -72,8 +72,11 @@
     <ClCompile Include="MeshComponent.cpp">
       <Filter>Engine\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Engine\GameObject</Filter>
+    <ClCompile Include="GeometryLoader.cpp">
+      <Filter>Engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="textureLoader.cpp">
+      <Filter>Engine\resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,11 +137,17 @@
     <ClInclude Include="MeshComponent.h">
       <Filter>Engine\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Engine\GameObject</Filter>
+    <ClInclude Include="GLclassesAndStructs.h">
+      <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Engine\GameObject</Filter>
+    <ClInclude Include="VertexShaderLayout.h">
+      <Filter>Engine\OpenGLAbstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryLoader.h">
+      <Filter>Engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Engine\resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
