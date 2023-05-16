@@ -193,9 +193,11 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
     glAttachShader(program, vs);
+    glCheckError();
     glAttachShader(program, fs);
+    glCheckError();
     glLinkProgram(program);
-
+    glCheckError();
     //HANDLE LINKING ERRORS
     int linkSuccess = GL_FALSE;
     glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
@@ -239,6 +241,9 @@ unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSou
 void Init(App* app)
 {
 
+
+
+    unsigned int myShaderIDx = LoadAndCreateProgram(app, "Basic.shader", app->shaderProgramsSrc);
 
  
     app->mode = Mode::Mode_TexturedQuad;
