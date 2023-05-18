@@ -36,8 +36,7 @@ struct App
 
     
 
-    // program indices
-    u32 texturedGeometryProgramIdx;
+    
     
     // texture indices
     u32 diceTexIdx;
@@ -60,7 +59,12 @@ struct App
 
     ShaderProgramSource shaderProgramsSrc;
 
+    
+    
     unsigned int texturedMeshProgramIDx; //the id (position) of the most recently created shader in programs vector
+    unsigned int modelIDx;
+
+    
     std::vector<Program>  programs;
     
     

@@ -15,7 +15,7 @@
 
 
 #include "..\errorHandler.h"
-
+#include "../GeometryLoader.h"
 
 
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
@@ -25,7 +25,7 @@ GLuint CreateProgramFromSource(String programSource, const char* shaderName)
     GLsizei infoLogSize;
     GLint   success;
 
-    char versionString[] = "#version 430\n";
+    char versionString[] = "#version 330\n";//PREV 430
     char shaderNameDefine[128];
     sprintf(shaderNameDefine, "#define %s\n", shaderName);
     char vertexShaderDefine[] = "#define VERTEX\n";
@@ -99,6 +99,7 @@ GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 
 u32 LoadProgram(App* app, const char* filepath, const char* programName)
 {
+
     String programSource = ReadTextFile(filepath); //returns a string with the shader
 
     Program program = {};
@@ -164,19 +165,23 @@ ShaderProgramSource parseShader(std::string filePath) {
 unsigned int compileShader( unsigned int type, const std::string& source) {
 
     unsigned int id = glCreateShader(type);
+    glCheckError();
     const char* src = source.c_str();
     glShaderSource(id, 1, &src, nullptr);
+    glCheckError();
     glCompileShader(id);
+    glCheckError();
 
     //ERROR HANDLING HERE
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    glCheckError();
     if (result == GL_FALSE) {
         int length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char* message = (char*)alloca(length*sizeof(char));
+        char* message = (char*)_malloca(length*sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        ELOG("Failed to compile %i shader!", type);
+        ELOG("Failed to compile %i shader! problem: %s", type, message);
         glDeleteShader(id);
         return 0;
     }
@@ -189,6 +194,7 @@ unsigned int compileShader( unsigned int type, const std::string& source) {
 unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader) {
 
     unsigned int program = glCreateProgram();
+    glCheckError();
     unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
@@ -214,7 +220,7 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     }
 
     glValidateProgram(program);
-   
+    glCheckError();
     
    
 
@@ -226,6 +232,17 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
 
 //returns the program position in programs array
 unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSource shaderProgramsSrc) {
+    
+    const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    if (glslVersion != nullptr) {
+        // Print or store the GLSL version
+        printf("GLSL version: %s\n", glslVersion);
+    }
+    else {
+        // Failed to retrieve GLSL version
+        printf("Failed to retrieve GLSL version\n");
+    }
+    
     app->shaderProgramsSrc = parseShader(filePath);
     Program program = {};
     program.handle = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
@@ -238,14 +255,51 @@ unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSou
 }
 
 
+
+GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
+    SubMesh& submesh = mesh.submeshes[submeshIndex];
+
+    //try find vao for the submesh/program
+
+    for (unsigned int i = 0; i < submesh.vaos.size(); i++) {
+        if (submesh.vaos[i].programHandle == program.handle) {
+            return submesh.vaos[i].handle;
+        }
+    }
+
+    GLuint vaoHandle = 0;
+    //create vao for this submesh program
+
+
+
+}
+
+
 void Init(App* app)
 {
 
+    const char* name = "Patrick/Patrick.obj";
+    app->modelIDx = LoadModel(app, name);
+        
 
+    app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic.shader", app->shaderProgramsSrc);
+    Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+   
+    
+    GLint attrCount = 0;
+    glGetProgramiv(TexturedMeshProgram.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
+    glCheckError();
 
-    unsigned int myShaderIDx = LoadAndCreateProgram(app, "Basic.shader", app->shaderProgramsSrc);
+    for (int i = 0; i < attrCount; i++) {
+        const int bufferSize = 256; // adjust buffer size as needed
+        GLsizei length;
+        GLint size;
+        GLenum type;
+        GLchar name[bufferSize];
+        glGetActiveAttrib(TexturedMeshProgram.handle, i, bufferSize, &length, &size, &type, name);
+        TexturedMeshProgram.VSLayout.Push(length, size, type, *name);
+    }
 
- 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
@@ -266,9 +320,16 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
-            
+            Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+            glUseProgram(texturedMeshProgram.handle);
+            glCheckError();
+            Model& model = app->models[app->modelIDx];
+            Mesh& mesh = app->meshes[model.meshIDx];
 
-          
+            for (unsigned int i = 0; i < mesh.submeshes.size(); i++) {
+                GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
+            }
+
         }
             break;
 

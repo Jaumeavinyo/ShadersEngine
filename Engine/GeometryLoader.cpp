@@ -226,12 +226,18 @@ u32 LoadModel(App* app, const char* filename)
     }
 
     glGenBuffers(1, &mesh.VBO_handle);
+    glCheckError();
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO_handle);
+    glCheckError();
     glBufferData(GL_ARRAY_BUFFER, vertexBufferSize, NULL, GL_STATIC_DRAW);
+    glCheckError();
 
     glGenBuffers(1, &mesh.IBO_handle);
+    glCheckError();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
+    glCheckError();
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexBufferSize, NULL, GL_STATIC_DRAW);
+    glCheckError();
 
     u32 indicesOffset = 0;
     u32 verticesOffset = 0;
@@ -241,12 +247,14 @@ u32 LoadModel(App* app, const char* filename)
         const void* verticesData = mesh.submeshes[i].vertices.data();
         const u32   verticesSize = mesh.submeshes[i].vertices.size() * sizeof(float);
         glBufferSubData(GL_ARRAY_BUFFER, verticesOffset, verticesSize, verticesData);
+        glCheckError();
         mesh.submeshes[i].vertexOffset = verticesOffset;
         verticesOffset += verticesSize;
 
         const void* indicesData = mesh.submeshes[i].indices.data();
         const u32   indicesSize = mesh.submeshes[i].indices.size() * sizeof(u32);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indicesOffset, indicesSize, indicesData);
+        glCheckError();
         mesh.submeshes[i].indexOffset = indicesOffset;
         indicesOffset += indicesSize;
     }

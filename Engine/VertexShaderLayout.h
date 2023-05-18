@@ -14,8 +14,66 @@
 
 struct VertexShaderElement {
 	//location is element location in elements array
-	unsigned int count;
 
+	GLsizei length;//int: number of characters insid name
+	GLint size;//int: size of attrib variable
+	GLenum type;//unsigned int: constant values include GL_FLOAT, GL_FLOAT_VEC2, GL_FLOAT_VEC3, GL_FLOAT_VEC4, GL_INT, GL_INT_VEC2, GL_INT_VEC3, GL_INT_VEC4
+    GLchar name;
+
+
+	void getSizeOfType(GLenum type) {
+        switch (type) {
+        case GL_FLOAT:
+            // Handle float attribute variable
+            break;
+        case GL_FLOAT_VEC2:
+            // Handle vec2 attribute variable
+            break;
+        case GL_FLOAT_VEC3:
+            // Handle vec3 attribute variable
+            break;
+        case GL_FLOAT_VEC4:
+            // Handle vec4 attribute variable
+            break;
+        case GL_INT:
+            // Handle int attribute variable
+            break;
+        case GL_INT_VEC2:
+            // Handle ivec2 attribute variable
+            break;
+        case GL_INT_VEC3:
+            // Handle ivec3 attribute variable
+            break;
+        case GL_INT_VEC4:
+            // Handle ivec4 attribute variable
+            break;
+        case GL_BOOL:
+            // Handle bool attribute variable
+            break;
+        case GL_BOOL_VEC2:
+            // Handle bvec2 attribute variable
+            break;
+        case GL_BOOL_VEC3:
+            // Handle bvec3 attribute variable
+            break;
+        case GL_BOOL_VEC4:
+            // Handle bvec4 attribute variable
+            break;
+        case GL_FLOAT_MAT2:
+            // Handle mat2 attribute variable
+            break;
+        case GL_FLOAT_MAT3:
+            // Handle mat3 attribute variable
+            break;
+        case GL_FLOAT_MAT4:
+            // Handle mat4 attribute variable
+            break;
+            // Handle other attribute variable types
+        default:
+            // Handle unknown attribute variable type
+            break;
+        }
+	}
 };
 
 
@@ -34,8 +92,8 @@ private:
 public:
 
 	
-	void Push(unsigned int count) {
-		Elements.push_back({ count });
+	void Push(GLsizei length, GLint size,GLenum type, GLchar name) {
+		Elements.push_back({ length, size, type, name });
 	}
 
 

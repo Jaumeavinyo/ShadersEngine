@@ -1,5 +1,6 @@
 #pragma once
 #include "VertexBufferLayout.h"
+#include "VertexShaderLayout.h"
 #include "Code/platform.h"
 
 
@@ -78,6 +79,7 @@ struct Model {
 
 struct Program
 {
+    VertexShaderLayout VSLayout;
     unsigned int                handle;
     std::string                 filepath;
     std::string                 programName;
