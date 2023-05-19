@@ -68,26 +68,19 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh* mesh, Mesh* myMesh, u32 bas
 
     // create the vertex format
     VertexBufferLayout vertexBufferLayout = {};
-    vertexBufferLayout.Push<float>(3);//3d pos
-    //vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 });
-    vertexBufferLayout.Push<float>(3);// normals
-    //vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 1, 3, 3 * sizeof(float) });
-    //vertexBufferLayout.stride = 6 * sizeof(float);
+    vertexBufferLayout.Push<float>(3,0);//3d pos
+    
+    vertexBufferLayout.Push<float>(3,1);// normals
+    
     if (hasTexCoords)
     {
-        vertexBufferLayout.Push<float>(2);//tex coords
-        //vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 2, 2, vertexBufferLayout.stride });
-        //vertexBufferLayout.stride += 2 * sizeof(float);
+        vertexBufferLayout.Push<float>(2,2);//tex coords   
     }
     if (hasTangentSpace)
     {
-        vertexBufferLayout.Push<float>(3);
-        //vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 3, 3, vertexBufferLayout.stride });
-        //vertexBufferLayout.stride += 3 * sizeof(float);
-
-        vertexBufferLayout.Push<float>(3);
-        //vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 4, 3, vertexBufferLayout.stride });
-        //vertexBufferLayout.stride += 3 * sizeof(float);
+        vertexBufferLayout.Push<float>(3,3);
+        
+        vertexBufferLayout.Push<float>(3,4);   
     }
 
     // add the submesh into the mesh

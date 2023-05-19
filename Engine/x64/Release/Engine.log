@@ -1,0 +1,8 @@
+﻿  engine.cpp
+C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(287,140): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
+  Generating code
+  69 of 2501 functions ( 2.8%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    45 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Engine.vcxproj -> C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\x64\Release\Engine.exe

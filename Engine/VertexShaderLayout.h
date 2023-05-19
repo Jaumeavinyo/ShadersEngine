@@ -19,7 +19,7 @@ struct VertexShaderElement {
 	GLint size;//int: size of attrib variable
 	GLenum type;//unsigned int: constant values include GL_FLOAT, GL_FLOAT_VEC2, GL_FLOAT_VEC3, GL_FLOAT_VEC4, GL_INT, GL_INT_VEC2, GL_INT_VEC3, GL_INT_VEC4
     GLchar name;
-
+    unsigned int location;
 
 	void getSizeOfType(GLenum type) {
         switch (type) {
@@ -92,8 +92,8 @@ private:
 public:
 
 	
-	void Push(GLsizei length, GLint size,GLenum type, GLchar name) {
-		Elements.push_back({ length, size, type, name });
+	void Push(GLsizei length, GLint size,GLenum type, GLchar name,unsigned int location) {
+		Elements.push_back({ length, size, type, name, location });
 	}
 
 

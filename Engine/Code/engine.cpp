@@ -267,10 +267,44 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
         }
     }
 
-    GLuint vaoHandle = 0;
     //create vao for this submesh program
+    GLuint vaoHandle = 0;
+    glGenVertexArrays(1, &vaoHandle);
+    glBindVertexArray(vaoHandle);
+
+    glBindBuffer(GL_ARRAY_BUFFER,mesh.VBO_handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
+
+    unsigned int offset = 0;
+
+    for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
+        bool attribLinked = false;
+        for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
+            if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
+                auto elements = submesh.VBLayout.getElements();
+                auto element = elements[j];
+                unsigned int offset = submesh.vertexOffset + element.elementOffset;
+                glVertexAttribPointer(i, element.count, element.type, element.normalized, submesh.VBLayout.getStride(), (const void*)offset);
+                glCheckError();
+                glEnableVertexAttribArray(i);
+                glCheckError();
+
+                
+                attribLinked = true;
+                break;
+                
+            }
+        }
+        assert(attribLinked);//submesh VBLayout should have attribute for each VSLayout attribute
+    }
+
+    glBindVertexArray(0);
 
 
+    VAO vao = { vaoHandle,program.handle };
+    submesh.vaos.push_back(vao);
+
+    return vaoHandle;
 
 }
 
@@ -297,7 +331,8 @@ void Init(App* app)
         GLenum type;
         GLchar name[bufferSize];
         glGetActiveAttrib(TexturedMeshProgram.handle, i, bufferSize, &length, &size, &type, name);
-        TexturedMeshProgram.VSLayout.Push(length, size, type, *name);
+        unsigned int attribLocation = glGetAttribLocation(TexturedMeshProgram.handle, name);
+        TexturedMeshProgram.VSLayout.Push(length, size, type, *name,attribLocation);
     }
 
     app->mode = Mode::Mode_TexturedQuad;
@@ -326,8 +361,19 @@ void Render(App* app)
             Model& model = app->models[app->modelIDx];
             Mesh& mesh = app->meshes[model.meshIDx];
 
-            for (unsigned int i = 0; i < mesh.submeshes.size(); i++) {
+            for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
                 GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
+                glBindVertexArray(vao);
+                unsigned int submeshMatIDx = model.materialIDx[i];
+                Material& submeshMaterial = app->materials[submeshMatIDx];
+                
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
+                unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "u_Texture");
+                glUniform1i(textureLocation, 0);
+
+                SubMesh& submesh = mesh.submeshes[i];
+                glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
             }
 
         }
