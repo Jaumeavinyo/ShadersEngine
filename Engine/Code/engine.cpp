@@ -275,16 +275,21 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
     glBindBuffer(GL_ARRAY_BUFFER,mesh.VBO_handle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
 
-    unsigned int offset = 0;
+    
 
     for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
         bool attribLinked = false;
         for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
             if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
-                auto elements = submesh.VBLayout.getElements();
-                auto element = elements[j];
-                unsigned int offset = submesh.vertexOffset + element.elementOffset;
-                glVertexAttribPointer(i, element.count, element.type, element.normalized, submesh.VBLayout.getStride(), (const void*)offset);
+
+                unsigned int index = submesh.VBLayout.getElements()[j].location;
+                unsigned int count = submesh.VBLayout.getElements()[j].count;
+                unsigned int offset = submesh.VBLayout.getElements()[j].elementOffset + submesh.vertexOffset;
+                unsigned int stride = submesh.VBLayout.getStride();
+
+                auto element = submesh.VBLayout.getElements()[j];
+                              
+                glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
                 glCheckError();
                 glEnableVertexAttribArray(i);
                 glCheckError();
@@ -311,7 +316,7 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
 void Init(App* app)
 {
-
+    //const char* name = "cube/Crate1.obj";
     const char* name = "Patrick/Patrick.obj";
     app->modelIDx = LoadModel(app, name);
         
@@ -331,6 +336,7 @@ void Init(App* app)
         GLenum type;
         GLchar name[bufferSize];
         glGetActiveAttrib(TexturedMeshProgram.handle, i, bufferSize, &length, &size, &type, name);
+        glCheckError();
         unsigned int attribLocation = glGetAttribLocation(TexturedMeshProgram.handle, name);
         TexturedMeshProgram.VSLayout.Push(length, size, type, *name,attribLocation);
     }
@@ -355,6 +361,7 @@ void Render(App* app)
     {
         case Mode_TexturedQuad:
         {
+            glClearColor(0.2, 0.2, 0.2, 1.);
             Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
             glUseProgram(texturedMeshProgram.handle);
             glCheckError();
@@ -364,16 +371,23 @@ void Render(App* app)
             for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
                 GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
                 glBindVertexArray(vao);
+                glCheckError();
                 unsigned int submeshMatIDx = model.materialIDx[i];
                 Material& submeshMaterial = app->materials[submeshMatIDx];
                 
                 glActiveTexture(GL_TEXTURE0);
+                glCheckError();
                 glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
-                unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "u_Texture");
+                glCheckError();
+                unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "uTexture");
                 glUniform1i(textureLocation, 0);
+                glCheckError();
+            
+
 
                 SubMesh& submesh = mesh.submeshes[i];
                 glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
+                glCheckError();
             }
 
         }

@@ -21,11 +21,11 @@ struct VertexBufferElement {
 		switch (type)
 		{
 			case GL_FLOAT:
-				return 4;	
+				return (unsigned int)4;	
 			case GL_UNSIGNED_INT:
-				return 4;
+				return (unsigned int)4;
 			case GL_UNSIGNED_BYTE:
-				return 1;
+				return (unsigned int)1;
 		}
 		_ASSERT(false);
 		return 0;
@@ -46,7 +46,7 @@ private:
 	unsigned int Stride;
 
 public:
-
+	
 	template<typename T>
 	void Push(unsigned int count,unsigned int location) {
 		static_assert(false);
@@ -55,21 +55,21 @@ public:
 	template<>
 	void Push<float>(unsigned int count, unsigned int location) {
 		Elements.push_back({GL_FLOAT,count,GL_FALSE,location});
-		Elements[Elements.size()-1u].elementOffset = Stride + count * VertexBufferElement::getSizeOfType(GL_FLOAT);
-		Stride += count * VertexBufferElement::getSizeOfType(GL_FLOAT);
+		Elements.back().elementOffset = Stride;
+		Stride += count * sizeof(float);
 	}
 
 	template<>
 	void Push<unsigned int>(unsigned int count, unsigned int location) {
 		Elements.push_back({ GL_UNSIGNED_INT,count,GL_FALSE,location });
-		Elements[Elements.size() - 1u].elementOffset = Stride + count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT);
+		Elements.back().elementOffset = Stride;
 		Stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT);
 	}
 
 	template<>
 	void Push<unsigned char>(unsigned int count, unsigned int location) {
 		Elements.push_back({ GL_UNSIGNED_BYTE,count,GL_TRUE,location });
-		Elements[Elements.size() - 1u].elementOffset = Stride + count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
+		Elements.back().elementOffset = Stride;
 		Stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE) ;
 	}
 

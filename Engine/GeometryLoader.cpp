@@ -67,7 +67,7 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh* mesh, Mesh* myMesh, u32 bas
     submeshMaterialIndices.push_back(baseMeshMaterialIndex + mesh->mMaterialIndex);
 
     // create the vertex format
-    VertexBufferLayout vertexBufferLayout = {};
+    VertexBufferLayout vertexBufferLayout;
     vertexBufferLayout.Push<float>(3,0);//3d pos
     
     vertexBufferLayout.Push<float>(3,1);// normals
