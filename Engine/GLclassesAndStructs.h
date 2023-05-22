@@ -75,6 +75,8 @@ struct Mesh
 struct Model {
     unsigned int meshIDx;
     std::vector<unsigned int> materialIDx;
+
+    glm::mat4 modelTransform = glm::mat4(1.0f);
 };
 
 struct Program

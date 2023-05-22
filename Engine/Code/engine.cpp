@@ -328,7 +328,8 @@ void Init(App* app)
     GLint attrCount = 0;
     glGetProgramiv(TexturedMeshProgram.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
     glCheckError();
-
+    app->models[app->modelIDx].modelTransform = glm::scale(app->models[app->modelIDx].modelTransform, glm::vec3(0.2, 0.2, 0.2));
+    app->models[app->modelIDx].modelTransform = glm::rotate(app->models[app->modelIDx].modelTransform, glm::radians(90.0f), glm::vec3(0.0, 1.0, 0.0));
     for (int i = 0; i < attrCount; i++) {
         const int bufferSize = 256; // adjust buffer size as needed
         GLsizei length;
@@ -381,6 +382,11 @@ void Render(App* app)
                 glCheckError();
                 unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "uTexture");
                 glUniform1i(textureLocation, 0);
+                
+                
+
+                unsigned int transformLocation = glGetUniformLocation(texturedMeshProgram.handle, "transform");
+                glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(model.modelTransform));
                 glCheckError();
             
 
