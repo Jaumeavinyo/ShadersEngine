@@ -291,7 +291,7 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
                               
                 glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
                 glCheckError();
-                glEnableVertexAttribArray(i);
+                glEnableVertexAttribArray(index);
                 glCheckError();
 
                 
