@@ -16,7 +16,7 @@
 unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
 unsigned int compileShader(unsigned int type, const std::string& source);
 ShaderProgramSource parseShader(std::string filePath);
-
+glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactor);
 
 void LoadAndCreateProgram(std::string filePath, ShaderProgramSource shaderProgramsSrc);
 

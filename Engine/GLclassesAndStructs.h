@@ -86,7 +86,7 @@ struct Model {
     unsigned int meshIDx;
     std::vector<unsigned int> materialIDx;
 
-    glm::mat4 localTransform;
+    glm::vec3 pos;
 };
 
 struct Camera {

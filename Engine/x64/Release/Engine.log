@@ -1,44 +1,9 @@
 ﻿  engine.cpp
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(326,126): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(415,43): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-  platform.cpp
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(43,36): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(44,36): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(45,29): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\platform.cpp(46,29): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
-  errorHandler.cpp
-  GameObject.cpp
-  GeometryLoader.cpp
-  MeshComponent.cpp
-  Renderer.cpp
-  textureLoader.cpp
-  imgui.cpp
-  imgui_demo.cpp
-  imgui_draw.cpp
-  imgui_impl_glfw.cpp
-  imgui_impl_opengl3.cpp
-  imgui_tables.cpp
-  imgui_widgets.cpp
-  stb.cpp
-  glad.c
+C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(240,126): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
+C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(357,43): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
   Generating code
-  Previous IPDB not found, fall back to full compilation.
-  All 2546 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 2550 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    30 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Engine.vcxproj -> C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\x64\Release\Engine.exe

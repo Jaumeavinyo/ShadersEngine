@@ -19,100 +19,11 @@
 
 #include <GLFW/glfw3.h>
 
-GLuint CreateProgramFromSource(String programSource, const char* shaderName)
-{
-    GLchar  infoLogBuffer[1024] = {};
-    GLsizei infoLogBufferSize = sizeof(infoLogBuffer);
-    GLsizei infoLogSize;
-    GLint   success;
-
-    char versionString[] = "#version 330\n";//PREV 430
-    char shaderNameDefine[128];
-    sprintf(shaderNameDefine, "#define %s\n", shaderName);
-    char vertexShaderDefine[] = "#define VERTEX\n";
-    char fragmentShaderDefine[] = "#define FRAGMENT\n";
-
-    const GLchar* vertexShaderSource[] = {
-        versionString,
-        shaderNameDefine,
-        vertexShaderDefine,
-        programSource.str
-    };
-    const GLint vertexShaderLengths[] = {
-        (GLint) strlen(versionString),
-        (GLint) strlen(shaderNameDefine),
-        (GLint) strlen(vertexShaderDefine),
-        (GLint) programSource.len
-    };
-    const GLchar* fragmentShaderSource[] = {
-        versionString,
-        shaderNameDefine,
-        fragmentShaderDefine,
-        programSource.str
-    };
-    const GLint fragmentShaderLengths[] = {
-        (GLint) strlen(versionString),
-        (GLint) strlen(shaderNameDefine),
-        (GLint) strlen(fragmentShaderDefine),
-        (GLint) programSource.len
-    };
-
-    GLuint vshader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vshader, ARRAY_COUNT(vertexShaderSource), vertexShaderSource, vertexShaderLengths);
-    glCompileShader(vshader);
-    glGetShaderiv(vshader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vshader, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glCompileShader() failed with vertex shader %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    GLuint fshader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fshader, ARRAY_COUNT(fragmentShaderSource), fragmentShaderSource, fragmentShaderLengths);
-    glCompileShader(fshader);
-    glGetShaderiv(fshader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fshader, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glCompileShader() failed with fragment shader %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    GLuint programHandle = glCreateProgram();
-    glAttachShader(programHandle, vshader);
-    glAttachShader(programHandle, fshader);
-    glLinkProgram(programHandle);
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(programHandle, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glLinkProgram() failed with program %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    glUseProgram(0);
-
-    glDetachShader(programHandle, vshader);
-    glDetachShader(programHandle, fshader);
-    glDeleteShader(vshader);
-    glDeleteShader(fshader);
-
-    return programHandle;
+glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactors) {
+    glm::mat4 transform = glm::translate(pos);
+    transform = scale(transform, scaleFactors);
+    return transform;
 }
-
-u32 LoadProgram(App* app, const char* filepath, const char* programName)
-{
-
-    String programSource = ReadTextFile(filepath); //returns a string with the shader
-
-    Program program = {};
-    program.handle = CreateProgramFromSource(programSource, programName);//returns uint for shader program location
-    program.filepath = filepath;
-    program.programName = programName;
-    program.lastWriteTimestamp = GetFileLastWriteTimestamp(filepath);
-    app->programs.push_back(program);
-
-    return app->programs.size() - 1;
-}
-
 
 void Gui(App* app)
 {
@@ -162,7 +73,6 @@ ShaderProgramSource parseShader(std::string filePath) {
     return { ss[0].str(),ss[1].str() };
 
 }
-
 unsigned int compileShader( unsigned int type, const std::string& source) {
 
     unsigned int id = glCreateShader(type);
@@ -230,8 +140,6 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
 
     return program;
 }
-
-//returns the program position in programs array
 unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSource shaderProgramsSrc) {
     
     const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -262,8 +170,11 @@ void cameraSetUp(App* app) {
     app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
     app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
 
+    
+
     app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
     app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
 }
 
 void modelTransform(App* app) {
@@ -350,26 +261,24 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
 }
 
-void sendUniforms(App* app,Program& program) {
+void sendUniforms(App* app,Program& program, Model model) {
 
     unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
     glUniform1i(textureLocation, 0);
     
 
-    //MODEL TRANSFORM
-    app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
-
     app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
-    unsigned int transformLocation = glGetUniformLocation(program.handle, "modelTransform");
-    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(app->camera.modelTransform));
+
+    glm::mat4 worldMat = transformPositionScale(model.pos, vec3(0.5));
+    glm::mat4 worldViewProjection = app->camera.projectionTransform * app->camera.viewTransform * worldMat;
+
+    unsigned int worldMatLocation = glGetUniformLocation(program.handle, "worldMat");
+    glUniformMatrix4fv(worldMatLocation, 1, GL_FALSE, glm::value_ptr(worldMat));
     glCheckError();
-    //VIEW TRANSFORM
-    unsigned int transformView = glGetUniformLocation(program.handle, "viewTransform");
-    glUniformMatrix4fv(transformView, 1, GL_FALSE, glm::value_ptr(app->camera.viewTransform));
-    glCheckError();
+
     //PROJECTION TRANSFORM
-    unsigned int transformProjection = glGetUniformLocation(program.handle, "projectionTransform");
-    glUniformMatrix4fv(transformProjection, 1, GL_FALSE, glm::value_ptr(app->camera.projectionTransform));
+    unsigned int worldViewProjectionLocation = glGetUniformLocation(program.handle, "worldViewProjection");
+    glUniformMatrix4fv(worldViewProjectionLocation, 1, GL_FALSE, glm::value_ptr(worldViewProjection));
     glCheckError();
 }
 
@@ -381,7 +290,8 @@ void Init(App* app)
     //const char* name = "cube/Crate1.obj";
     const char* name = "Patrick/Patrick.obj";
     app->modelIDx = LoadModel(app, name);
-        
+    app->models[app->modelIDx].pos = glm::vec3(0.0, 0.0, -10.0);
+    
 
     app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic.shader", app->shaderProgramsSrc);
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
@@ -410,6 +320,34 @@ void Update(App* app, GLFWwindow* window)
     
 }
 
+void renderModel(App*app, unsigned int modelIDx) {
+    Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+    glUseProgram(texturedMeshProgram.handle);
+    glCheckError();
+    Model& model = app->models[modelIDx];
+    Mesh& mesh = app->meshes[model.meshIDx];
+
+    for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
+        GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
+        glBindVertexArray(vao);
+        glCheckError();
+        unsigned int submeshMatIDx = model.materialIDx[i];
+        Material& submeshMaterial = app->materials[submeshMatIDx];
+
+        glActiveTexture(GL_TEXTURE0);
+        glCheckError();
+        glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
+        glCheckError();
+
+        sendUniforms(app, texturedMeshProgram,model);
+
+        SubMesh& submesh = mesh.submeshes[i];
+        glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
+        glCheckError();
+
+    }
+}
+
 void Render(App* app)
 {
     switch (app->mode)
@@ -418,31 +356,10 @@ void Render(App* app)
         {
             glClearColor(0.2, 0.2, 0.2, 1.);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
-            glUseProgram(texturedMeshProgram.handle);
-            glCheckError();
-            Model& model = app->models[app->modelIDx];
-            Mesh& mesh = app->meshes[model.meshIDx];
-
-            for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
-                GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
-                glBindVertexArray(vao);
-                glCheckError();
-                unsigned int submeshMatIDx = model.materialIDx[i];
-                Material& submeshMaterial = app->materials[submeshMatIDx];
-                
-                glActiveTexture(GL_TEXTURE0);
-                glCheckError();
-                glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
-                glCheckError();
-               
-                sendUniforms(app, texturedMeshProgram);
-                
-                SubMesh& submesh = mesh.submeshes[i];
-                glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
-                glCheckError();
-                
+            for (unsigned int i = 0; i < app->models.size(); i++) {
+                renderModel(app, i);
             }
+            
 
         }
             break;
