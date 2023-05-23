@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#define BINDING(b) b
 
 
 #include "platform.h"
@@ -71,13 +71,18 @@ struct App
     
     std::vector<GameObject*> gameObjects;
     std::vector<Mesh> meshes;
+    std::vector<Entity> entities;
     std::vector<Model> models;
     std::vector<Material> materials;
     std::vector<Texture>  textures;
    
 
     Camera camera;
-   
+    
+    //localParamsUniformBlock
+        UniformBlock LocalParams;
+
+    
 
 };
 

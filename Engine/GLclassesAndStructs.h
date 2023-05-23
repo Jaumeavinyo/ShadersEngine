@@ -86,7 +86,21 @@ struct Model {
     unsigned int meshIDx;
     std::vector<unsigned int> materialIDx;
 
+    
+};
+
+struct Entity {
+    glm::mat4 worldMat;
     glm::vec3 pos;
+    unsigned int modelIDx;
+    unsigned int localParamsOffset;
+    unsigned int localParamsSize;
+   
+};
+
+struct UniformBlock {
+    std::string name;
+    GLuint BufferHandle;
 };
 
 struct Camera {
@@ -124,6 +138,7 @@ struct Vertex {
     glm::vec3 pos;
     glm::vec2 uv;
 };
+
 
 
 enum Mode

@@ -157,5 +157,8 @@
     <None Include="Basic.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Basic2.shader">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

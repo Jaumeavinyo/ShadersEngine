@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.shader" />
+    <None Include="Basic2.shader" />
     <None Include="WorkingDir\shaders.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

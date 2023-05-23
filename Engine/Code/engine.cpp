@@ -5,6 +5,7 @@
 // graphics related GUI options, and so on.
 //
 
+
 #include "engine.h"
 #include <imgui.h>
 
@@ -261,25 +262,74 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
 }
 
-void sendUniforms(App* app,Program& program, Model model) {
+void setUniformBuffer(App* app,std::string name) {
+   
+    app->LocalParams.name = name;
+    
+    GLint maxUniformBufferSize;
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBufferSize);
+    GLint uniformBlockAligment;
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBlockAligment);
 
+    glGenBuffers(1, &app->LocalParams.BufferHandle);
+    glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
+    glBufferData(GL_UNIFORM_BUFFER, maxUniformBufferSize, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    unsigned int blockOffset = 0;
+    unsigned int blockSize = sizeof(glm::mat4) * 2;
+    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->LocalParams.BufferHandle, blockOffset, blockSize);
+   
+}
+
+void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm::mat4 worldViewProjection) {
+    
+    
+    glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
+    unsigned char* bufferData = (unsigned char*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    unsigned int bufferHead = 0;
+
+    memcpy(bufferData + bufferHead, glm::value_ptr(worldMat), sizeof(glm::mat4));
+    bufferHead += sizeof(glm::mat4);
+
+    memcpy(bufferData + bufferHead, glm::value_ptr(worldViewProjection), sizeof(glm::mat4));
+    bufferHead += sizeof(glm::mat4);
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
+           
+        
+    
+}
+
+void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
+
+    //Model model = app->models[modelIDx];
+    Entity entity = app->entities[entityIDx];
     unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
     glUniform1i(textureLocation, 0);
     
-
+    // MATRIX UNIFORMS
     app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    entity.pos.x += glm::sin((float)glfwGetTime());
+    entity.worldMat = transformPositionScale(entity.pos, vec3(0.5));
+    entity.worldMat = glm::rotate(entity.worldMat, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 worldViewProjection = app->camera.projectionTransform * app->camera.viewTransform * entity.worldMat;
 
-    glm::mat4 worldMat = transformPositionScale(model.pos, vec3(0.5));
-    glm::mat4 worldViewProjection = app->camera.projectionTransform * app->camera.viewTransform * worldMat;
+    updateUniformBuffers(app,entityIDx, entity.worldMat, worldViewProjection);
 
-    unsigned int worldMatLocation = glGetUniformLocation(program.handle, "worldMat");
-    glUniformMatrix4fv(worldMatLocation, 1, GL_FALSE, glm::value_ptr(worldMat));
-    glCheckError();
 
-    //PROJECTION TRANSFORM
-    unsigned int worldViewProjectionLocation = glGetUniformLocation(program.handle, "worldViewProjection");
-    glUniformMatrix4fv(worldViewProjectionLocation, 1, GL_FALSE, glm::value_ptr(worldViewProjection));
-    glCheckError();
+
+    //unsigned int worldMatLocation = glGetUniformLocation(program.handle, "worldMat");
+    //glUniformMatrix4fv(worldMatLocation, 1, GL_FALSE, glm::value_ptr(worldMat));
+    //glCheckError();
+
+    ////PROJECTION TRANSFORM
+    //unsigned int worldViewProjectionLocation = glGetUniformLocation(program.handle, "worldViewProjection");
+    //glUniformMatrix4fv(worldViewProjectionLocation, 1, GL_FALSE, glm::value_ptr(worldViewProjection));
+    //glCheckError();
 }
 
 void Init(App* app)
@@ -290,10 +340,21 @@ void Init(App* app)
     //const char* name = "cube/Crate1.obj";
     const char* name = "Patrick/Patrick.obj";
     app->modelIDx = LoadModel(app, name);
-    app->models[app->modelIDx].pos = glm::vec3(0.0, 0.0, -10.0);
-    
+    /*app->models[app->modelIDx].pos = glm::vec3(0.0, 0.0, -10.0);*/
 
-    app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic.shader", app->shaderProgramsSrc);
+    Entity entity0 = Entity{glm::mat4(),glm::vec3(6.0,0.0,-15.0),app->modelIDx};
+    Entity entity1 = Entity{ glm::mat4(),glm::vec3(1.0,0.0,-10.0),app->modelIDx };
+    Entity entity2 = Entity{ glm::mat4(),glm::vec3(-2.0,0.0,-5.0),app->modelIDx };
+    app->entities.push_back(entity0);
+    app->entities.push_back(entity1);
+    app->entities.push_back(entity2);
+
+
+    //localParams uniform block
+    std::string uniformName = "LocalParams";
+    setUniformBuffer(app,uniformName);
+
+    app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic2.shader", app->shaderProgramsSrc);
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     createVSLayout(TexturedMeshProgram);
     
@@ -320,11 +381,11 @@ void Update(App* app, GLFWwindow* window)
     
 }
 
-void renderModel(App*app, unsigned int modelIDx) {
+void renderEntities(App*app, unsigned int entityIDx) {
     Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     glUseProgram(texturedMeshProgram.handle);
     glCheckError();
-    Model& model = app->models[modelIDx];
+    Model& model = app->models[app->entities[entityIDx].modelIDx];
     Mesh& mesh = app->meshes[model.meshIDx];
 
     for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
@@ -339,7 +400,7 @@ void renderModel(App*app, unsigned int modelIDx) {
         glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
         glCheckError();
 
-        sendUniforms(app, texturedMeshProgram,model);
+        sendUniforms(app, texturedMeshProgram, entityIDx);
 
         SubMesh& submesh = mesh.submeshes[i];
         glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
@@ -356,8 +417,8 @@ void Render(App* app)
         {
             glClearColor(0.2, 0.2, 0.2, 1.);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (unsigned int i = 0; i < app->models.size(); i++) {
-                renderModel(app, i);
+            for (unsigned int i = 0; i < app->entities.size(); i++) {
+                renderEntities(app, i);
             }
             
 
