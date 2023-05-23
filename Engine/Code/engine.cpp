@@ -255,7 +255,40 @@ unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSou
     return app->programs.size() - 1;
 }
 
+void cameraSetUp(App* app) {
+    app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
+    app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    app->camera.cameraDirection = glm::normalize(app->camera.cameraPos - app->camera.cameraTarget);//The name direction vector is not the best chosen name, since it is actually pointing in the reverse direction of what it is targeting.
+    app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
+    app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
 
+    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+}
+
+void modelTransform(App* app) {
+    app->camera.modelTransform = glm::mat4(1.0f);
+    app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
+}
+
+void createVSLayout(Program& program) {
+    GLint attrCount = 0;
+    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
+    glCheckError();
+
+
+    for (int i = 0; i < attrCount; i++) {
+        const int bufferSize = 256; // adjust buffer size as needed
+        GLsizei length;
+        GLint size;
+        GLenum type;
+        GLchar name[bufferSize];
+        glGetActiveAttrib(program.handle, i, bufferSize, &length, &size, &type, name);
+        glCheckError();
+        unsigned int attribLocation = glGetAttribLocation(program.handle, name);
+        program.VSLayout.Push(length, size, type, *name, attribLocation);
+    }
+}
 
 GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
     SubMesh& submesh = mesh.submeshes[submeshIndex];
@@ -314,34 +347,31 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
 }
 
+void sendUniforms(App* app,Program& program) {
+    unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
+    glUniform1i(textureLocation, 0);
+
+    //MODEL TRANSFORM
+    app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
+
+    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    unsigned int transformLocation = glGetUniformLocation(program.handle, "modelTransform");
+    glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(app->camera.modelTransform));
+    glCheckError();
+    //VIEW TRANSFORM
+    unsigned int transformView = glGetUniformLocation(program.handle, "viewTransform");
+    glUniformMatrix4fv(transformView, 1, GL_FALSE, glm::value_ptr(app->camera.viewTransform));
+    glCheckError();
+    //PROJECTION TRANSFORM
+    unsigned int transformProjection = glGetUniformLocation(program.handle, "projectionTransform");
+    glUniformMatrix4fv(transformProjection, 1, GL_FALSE, glm::value_ptr(app->camera.projectionTransform));
+    glCheckError();
+}
 
 void Init(App* app)
 {
-
-    // TRANSFORMS   TRANSFORMS  TRANSFORMS  TRANSFORMS
-
-  
-
-    //CAMERA POS
-    app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
-    app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    app->camera.cameraDirection = glm::normalize(app->camera.cameraPos - app->camera.cameraTarget);//The name direction vector is not the best chosen name, since it is actually pointing in the reverse direction of what it is targeting.
-    app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
-    app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
-
-    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
-    
-
-    //MODEL
-    app->camera.modelTransform = glm::mat4(1.0f);
-    app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
-
-    //VIEW
-   /* app->camera.viewTransform = glm::mat4(1.0f);
-    app->camera.viewTransform = glm::translate(app->camera.viewTransform, glm::vec3(0.0f, 0.0f, -5.0f));*/
-
-    //PROJECTION
-    app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    cameraSetUp(app);
+    modelTransform(app);
 
     //const char* name = "cube/Crate1.obj";
     const char* name = "Patrick/Patrick.obj";
@@ -350,39 +380,29 @@ void Init(App* app)
 
     app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic.shader", app->shaderProgramsSrc);
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+    createVSLayout(TexturedMeshProgram);
+    
+    
    
-    
-    
-    GLint attrCount = 0;
-    glGetProgramiv(TexturedMeshProgram.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
-    glCheckError();
-    
-    
-    for (int i = 0; i < attrCount; i++) {
-        const int bufferSize = 256; // adjust buffer size as needed
-        GLsizei length;
-        GLint size;
-        GLenum type;
-        GLchar name[bufferSize];
-        glGetActiveAttrib(TexturedMeshProgram.handle, i, bufferSize, &length, &size, &type, name);
-        glCheckError();
-        unsigned int attribLocation = glGetAttribLocation(TexturedMeshProgram.handle, name);
-        TexturedMeshProgram.VSLayout.Push(length, size, type, *name,attribLocation);
-    }
 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
 
 
-void Update(App* app)
+void Update(App* app, GLFWwindow* window)
 {
     // You can handle app->input keyboard/mouse here
-
-    for (int i = 0; i < app->gameObjects.size(); i++) {
-        app->gameObjects[i]->Update();
-    }
-   
+    const float cameraSpeed = 0.05f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        app->camera.cameraPos += cameraSpeed * -app->camera.cameraDirection;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        app->camera.cameraPos -= cameraSpeed * -app->camera.cameraDirection;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        app->camera.cameraPos -= glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
+    
 }
 
 void Render(App* app)
@@ -409,26 +429,8 @@ void Render(App* app)
                 glCheckError();
                 glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
                 glCheckError();
-                unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "uTexture");
-                glUniform1i(textureLocation, 0);
-                
-                //MODEL TRANSFORM
-                app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
-                app->camera.cameraPos.x = sin(glfwGetTime()) * 1.0f;
-                app->camera.cameraPos.z = cos(glfwGetTime()) * 1.0f;
-                app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
-                unsigned int transformLocation = glGetUniformLocation(texturedMeshProgram.handle, "modelTransform");
-                glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(app->camera.modelTransform));
-                glCheckError();
-                //VIEW TRANSFORM
-                unsigned int transformView = glGetUniformLocation(texturedMeshProgram.handle, "viewTransform");
-                glUniformMatrix4fv(transformView, 1, GL_FALSE, glm::value_ptr(app->camera.viewTransform));
-                glCheckError();
-                //PROJECTION TRANSFORM
-                unsigned int transformProjection= glGetUniformLocation(texturedMeshProgram.handle, "projectionTransform");
-                glUniformMatrix4fv(transformProjection, 1, GL_FALSE, glm::value_ptr(app->camera.projectionTransform));
-                glCheckError();
-
+               
+                sendUniforms(app, texturedMeshProgram);
 
                 SubMesh& submesh = mesh.submeshes[i];
                 glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);

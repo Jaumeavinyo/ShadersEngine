@@ -11,6 +11,7 @@
 #include "..\GameObject.h"
 #include "../GLclassesAndStructs.h"
 
+#include "GLFW/glfw3.h"
 
 unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader);
 unsigned int compileShader(unsigned int type, const std::string& source);
@@ -84,10 +85,11 @@ void Init(App* app);
 
 void Gui(App* app);
 
-void Update(App* app);
+void Update(App* app, GLFWwindow* window);
 
 void Render(App* app);
 
+void cameraSetUp(App* app);
 
-
+void modelTransform(App* app);
 

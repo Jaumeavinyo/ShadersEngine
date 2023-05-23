@@ -1,16 +1,6 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(499,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
   engine.cpp
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(293,126): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(394,43): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(417,62): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
-C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(418,62): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
-          with
-          [
-              T=float
-          ]
+C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(326,126): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
+C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\engine.cpp(414,43): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
 LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Engine.vcxproj -> C:\Users\jauma\Documents\GitHub\ShadersEngine\Engine\Code\Engine.exe

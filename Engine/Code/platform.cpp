@@ -230,7 +230,7 @@ int main()
                 app.input.mouseButtons[i] = BUTTON_IDLE;
 
         // Update
-        Update(&app);
+        Update(&app,window);
 
         // Transition input key/button states
         if (!ImGui::GetIO().WantCaptureKeyboard)
