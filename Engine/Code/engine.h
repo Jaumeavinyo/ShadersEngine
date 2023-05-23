@@ -75,7 +75,7 @@ struct App
     std::vector<Texture>  textures;
    
 
-
+    Camera camera;
    
 
 };

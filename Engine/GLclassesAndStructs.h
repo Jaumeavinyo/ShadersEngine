@@ -62,7 +62,13 @@ struct SubMesh {
     std::vector<VAO> vaos;
 };
 
-
+struct Light {
+    int type;
+    vec3 color;
+    vec3 position;
+    vec3 direction;
+    float range;
+};
 
 struct Mesh
 {
@@ -76,7 +82,22 @@ struct Model {
     unsigned int meshIDx;
     std::vector<unsigned int> materialIDx;
 
-    glm::mat4 modelTransform = glm::mat4(1.0f);
+    glm::mat4 localTransform;
+};
+
+struct Camera {
+
+    vec3 position;
+
+    //to pass from local to world coords
+    glm::mat4 modelTransform;
+
+    //transform world coordinates to view space
+    glm::mat4 viewTransform;
+
+    //converts coordinates within this specified range to normalized device coordinates (-1.0, 1.0) (not directly, a step called Perspective Division sits in between).
+    //projects 3D coordinates to the easy-to-map-to-2D normalized device coordinates. = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projectionTransform;
 };
 
 struct Program

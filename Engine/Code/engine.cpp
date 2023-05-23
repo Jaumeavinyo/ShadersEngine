@@ -316,6 +316,20 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
 void Init(App* app)
 {
+
+    // TRANSFORMS   TRANSFORMS  TRANSFORMS  TRANSFORMS
+
+    //MODEL
+    app->camera.modelTransform = glm::mat4(1.0f);
+    app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
+
+    //VIEW
+    app->camera.viewTransform = glm::mat4(1.0f);
+    app->camera.viewTransform = glm::translate(app->camera.viewTransform, glm::vec3(0.0f, 0.0f, -30.0f));
+
+    //PROJECTION
+    app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
     //const char* name = "cube/Crate1.obj";
     const char* name = "Patrick/Patrick.obj";
     app->modelIDx = LoadModel(app, name);
@@ -325,11 +339,12 @@ void Init(App* app)
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
    
     
+    
     GLint attrCount = 0;
     glGetProgramiv(TexturedMeshProgram.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
     glCheckError();
-    app->models[app->modelIDx].modelTransform = glm::scale(app->models[app->modelIDx].modelTransform, glm::vec3(0.2, 0.2, 0.2));
-    app->models[app->modelIDx].modelTransform = glm::rotate(app->models[app->modelIDx].modelTransform, glm::radians(90.0f), glm::vec3(0.0, 1.0, 0.0));
+    
+    
     for (int i = 0; i < attrCount; i++) {
         const int bufferSize = 256; // adjust buffer size as needed
         GLsizei length;
@@ -354,6 +369,7 @@ void Update(App* app)
     for (int i = 0; i < app->gameObjects.size(); i++) {
         app->gameObjects[i]->Update();
     }
+   
 }
 
 void Render(App* app)
@@ -383,12 +399,19 @@ void Render(App* app)
                 unsigned int textureLocation = glGetUniformLocation(texturedMeshProgram.handle, "uTexture");
                 glUniform1i(textureLocation, 0);
                 
-                
-
-                unsigned int transformLocation = glGetUniformLocation(texturedMeshProgram.handle, "transform");
-                glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(model.modelTransform));
+                //MODEL TRANSFORM
+                app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
+                unsigned int transformLocation = glGetUniformLocation(texturedMeshProgram.handle, "modelTransform");
+                glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(app->camera.modelTransform));
                 glCheckError();
-            
+                //VIEW TRANSFORM
+                unsigned int transformView = glGetUniformLocation(texturedMeshProgram.handle, "viewTransform");
+                glUniformMatrix4fv(transformView, 1, GL_FALSE, glm::value_ptr(app->camera.viewTransform));
+                glCheckError();
+                //PROJECTION TRANSFORM
+                unsigned int transformProjection= glGetUniformLocation(texturedMeshProgram.handle, "projectionTransform");
+                glUniformMatrix4fv(transformProjection, 1, GL_FALSE, glm::value_ptr(app->camera.projectionTransform));
+                glCheckError();
 
 
                 SubMesh& submesh = mesh.submeshes[i];

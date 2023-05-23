@@ -6,12 +6,14 @@ layout(location = 2) in vec2 aTexCoord;
 
 out vec2 vTexCoord;
 
-uniform mat4 transform;
+uniform mat4 modelTransform;
+uniform mat4 viewTransform;
+uniform mat4 projectionTransform;
 
 void main() {
 	vTexCoord = aTexCoord;
-	gl_Position = transform * vec4(aPosition, 1.0f);
-	gl_Position.z = -gl_Position.z;
+	gl_Position = projectionTransform * viewTransform * modelTransform * vec4(aPosition, 1.0);
+	
 }
 
 
