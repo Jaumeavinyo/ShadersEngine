@@ -104,6 +104,9 @@ struct UniformBlock {
 };
 
 struct Camera {
+    //rotations:
+    float cameraYaw;
+    float cameraPitch;
 
     glm::vec3 cameraPos;
     glm::vec3 cameraTarget;

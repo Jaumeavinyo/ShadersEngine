@@ -25,7 +25,6 @@ glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactors) {
     transform = scale(transform, scaleFactors);
     return transform;
 }
-
 void Gui(App* app)
 {
     ImGui::Begin("Info");
@@ -43,7 +42,6 @@ void Gui(App* app)
     ImGui::EndChild();
     ImGui::End();
 }
-
 ShaderProgramSource parseShader(std::string filePath) {
     std::ifstream stream(filePath);//opens the file
 
@@ -163,7 +161,6 @@ unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSou
 
     return app->programs.size() - 1;
 }
-
 void cameraSetUp(App* app) {
     app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
     app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -177,12 +174,10 @@ void cameraSetUp(App* app) {
     app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
 }
-
 void modelTransform(App* app) {
     app->camera.modelTransform = glm::mat4(1.0f);
     app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
 }
-
 void createVSLayout(Program& program) {
     GLint attrCount = 0;
     glUseProgram(program.handle);
@@ -204,64 +199,6 @@ void createVSLayout(Program& program) {
     }
     glUseProgram(0);
 }
-
-GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
-    SubMesh& submesh = mesh.submeshes[submeshIndex];
-
-    //try find vao for the submesh/program
-
-    for (unsigned int i = 0; i < submesh.vaos.size(); i++) {
-        if (submesh.vaos[i].programHandle == program.handle) {
-            return submesh.vaos[i].handle;
-        }
-    }
-
-    //create vao for this submesh program
-    GLuint vaoHandle = 0;
-    glGenVertexArrays(1, &vaoHandle);
-    glBindVertexArray(vaoHandle);
-
-    glBindBuffer(GL_ARRAY_BUFFER,mesh.VBO_handle);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
-
-    
-
-    for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
-        bool attribLinked = false;
-        for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
-            if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
-
-                unsigned int index = submesh.VBLayout.getElements()[j].location;
-                unsigned int count = submesh.VBLayout.getElements()[j].count;
-                unsigned int offset = submesh.VBLayout.getElements()[j].elementOffset + submesh.vertexOffset;
-                unsigned int stride = submesh.VBLayout.getStride();
-
-                auto element = submesh.VBLayout.getElements()[j];
-                              
-                glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
-                glCheckError();
-                glEnableVertexAttribArray(index);
-                glCheckError();
-
-                
-                attribLinked = true;
-                break;
-                
-            }
-        }
-        assert(attribLinked);//submesh VBLayout should have attribute for each VSLayout attribute
-    }
-
-    glBindVertexArray(0);
-
-
-    VAO vao = { vaoHandle,program.handle };
-    submesh.vaos.push_back(vao);
-
-    return vaoHandle;
-
-}
-
 void setUniformBuffer(App* app,std::string name) {
    
     app->LocalParams.name = name;
@@ -281,10 +218,8 @@ void setUniformBuffer(App* app,std::string name) {
     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->LocalParams.BufferHandle, blockOffset, blockSize);
    
 }
-
 void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm::mat4 worldViewProjection) {
-    
-    
+       
     glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
     unsigned char* bufferData = (unsigned char*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
     unsigned int bufferHead = 0;
@@ -297,13 +232,8 @@ void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm
 
     glUnmapBuffer(GL_UNIFORM_BUFFER);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-
-           
-        
-    
+  
 }
-
 void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
 
     //Model model = app->models[modelIDx];
@@ -320,16 +250,6 @@ void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
 
     updateUniformBuffers(app,entityIDx, entity.worldMat, worldViewProjection);
 
-
-
-    //unsigned int worldMatLocation = glGetUniformLocation(program.handle, "worldMat");
-    //glUniformMatrix4fv(worldMatLocation, 1, GL_FALSE, glm::value_ptr(worldMat));
-    //glCheckError();
-
-    ////PROJECTION TRANSFORM
-    //unsigned int worldViewProjectionLocation = glGetUniformLocation(program.handle, "worldViewProjection");
-    //glUniformMatrix4fv(worldViewProjectionLocation, 1, GL_FALSE, glm::value_ptr(worldViewProjection));
-    //glCheckError();
 }
 
 void Init(App* app)
@@ -358,18 +278,56 @@ void Init(App* app)
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     createVSLayout(TexturedMeshProgram);
     
-    
     glEnable(GL_DEPTH_TEST);
 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
 
-
 void Update(App* app, GLFWwindow* window)
 {
     // You can handle app->input keyboard/mouse here
-    const float cameraSpeed = 0.05f; // adjust accordingly
+    const float cameraSpeed = 0.05f; 
+    const float sensitivity = 0.1f; // adjust mouse sensitivity
+    const float maxPitch = 89.0f; // maximum pitch angle (in degrees)
+    const float minPitch = -20.0f; // minimum pitch angle (in degrees)
+
+    static double lastMouseX = 0.0;
+    static double lastMouseY = 0.0;
+
+    // Get current mouse position
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    // Calculate mouse movement deltas
+    double deltaX = mouseX - lastMouseX;
+    double deltaY = mouseY - lastMouseY;
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+
+    // Apply rotation to camera
+    float yaw = static_cast<float>(deltaX) * sensitivity;
+    float pitch = static_cast<float>(deltaY) * sensitivity;
+
+    app->camera.cameraYaw += yaw;
+    app->camera.cameraPitch += pitch;
+
+    // Clamp pitch to the specified range
+    if (app->camera.cameraPitch > maxPitch)
+        app->camera.cameraPitch = maxPitch;
+    if (app->camera.cameraPitch < minPitch)
+        app->camera.cameraPitch = minPitch;
+
+    // Update camera direction based on yaw and pitch
+    float yawRadians = glm::radians(app->camera.cameraYaw);
+    float pitchRadians = glm::radians(app->camera.cameraPitch);
+    glm::vec3 direction;
+    direction.x = cos(yawRadians) * cos(pitchRadians);
+    direction.y = sin(pitchRadians);
+    direction.z = sin(yawRadians) * cos(pitchRadians);
+    app->camera.cameraDirection = glm::normalize(direction);
+
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         app->camera.cameraPos += cameraSpeed * -app->camera.cameraDirection;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -378,9 +336,67 @@ void Update(App* app, GLFWwindow* window)
         app->camera.cameraPos -= glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
-    
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, -app->camera.cameraRight)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraRight)) * cameraSpeed;
 }
+GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
+    SubMesh& submesh = mesh.submeshes[submeshIndex];
 
+    //try find vao for the submesh/program
+
+    for (unsigned int i = 0; i < submesh.vaos.size(); i++) {
+        if (submesh.vaos[i].programHandle == program.handle) {
+            return submesh.vaos[i].handle;
+        }
+    }
+
+    //create vao for this submesh program
+    GLuint vaoHandle = 0;
+    glGenVertexArrays(1, &vaoHandle);
+    glBindVertexArray(vaoHandle);
+
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO_handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
+
+
+
+    for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
+        bool attribLinked = false;
+        for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
+            if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
+
+                unsigned int index = submesh.VBLayout.getElements()[j].location;
+                unsigned int count = submesh.VBLayout.getElements()[j].count;
+                unsigned int offset = submesh.VBLayout.getElements()[j].elementOffset + submesh.vertexOffset;
+                unsigned int stride = submesh.VBLayout.getStride();
+
+                auto element = submesh.VBLayout.getElements()[j];
+
+                glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
+                glCheckError();
+                glEnableVertexAttribArray(index);
+                glCheckError();
+
+
+                attribLinked = true;
+                break;
+
+            }
+        }
+        assert(attribLinked);//submesh VBLayout should have attribute for each VSLayout attribute
+    }
+
+    glBindVertexArray(0);
+
+
+    VAO vao = { vaoHandle,program.handle };
+    submesh.vaos.push_back(vao);
+
+    return vaoHandle;
+
+}
 void renderEntities(App*app, unsigned int entityIDx) {
     Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     glUseProgram(texturedMeshProgram.handle);
@@ -408,7 +424,6 @@ void renderEntities(App*app, unsigned int entityIDx) {
 
     }
 }
-
 void Render(App* app)
 {
     switch (app->mode)
