@@ -87,7 +87,14 @@ struct Model {
 
 struct Camera {
 
-    vec3 position;
+    glm::vec3 cameraPos;
+    glm::vec3 cameraTarget;
+
+    glm::vec3 cameraDirection;
+    glm::vec3 cameraRight;
+    glm::vec3 cameraUp;
+
+    glm::mat4 lookAtMat;
 
     //to pass from local to world coords
     glm::mat4 modelTransform;

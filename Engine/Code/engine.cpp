@@ -17,6 +17,7 @@
 #include "..\errorHandler.h"
 #include "../GeometryLoader.h"
 
+#include <GLFW/glfw3.h>
 
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
@@ -319,13 +320,25 @@ void Init(App* app)
 
     // TRANSFORMS   TRANSFORMS  TRANSFORMS  TRANSFORMS
 
+  
+
+    //CAMERA POS
+    app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
+    app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    app->camera.cameraDirection = glm::normalize(app->camera.cameraPos - app->camera.cameraTarget);//The name direction vector is not the best chosen name, since it is actually pointing in the reverse direction of what it is targeting.
+    app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
+    app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
+
+    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    
+
     //MODEL
     app->camera.modelTransform = glm::mat4(1.0f);
     app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
 
     //VIEW
-    app->camera.viewTransform = glm::mat4(1.0f);
-    app->camera.viewTransform = glm::translate(app->camera.viewTransform, glm::vec3(0.0f, 0.0f, -30.0f));
+   /* app->camera.viewTransform = glm::mat4(1.0f);
+    app->camera.viewTransform = glm::translate(app->camera.viewTransform, glm::vec3(0.0f, 0.0f, -5.0f));*/
 
     //PROJECTION
     app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -401,6 +414,9 @@ void Render(App* app)
                 
                 //MODEL TRANSFORM
                 app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
+                app->camera.cameraPos.x = sin(glfwGetTime()) * 1.0f;
+                app->camera.cameraPos.z = cos(glfwGetTime()) * 1.0f;
+                app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
                 unsigned int transformLocation = glGetUniformLocation(texturedMeshProgram.handle, "modelTransform");
                 glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(app->camera.modelTransform));
                 glCheckError();
