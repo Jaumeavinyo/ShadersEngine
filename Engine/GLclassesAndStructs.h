@@ -11,6 +11,10 @@ typedef glm::ivec2 ivec2;
 typedef glm::ivec3 ivec3;
 typedef glm::ivec4 ivec4;
 
+enum LightType {
+    LightType_Directional,
+    LightType_Point
+};
 
 
 struct ShaderProgramSource {
@@ -63,7 +67,7 @@ struct SubMesh {
 };
 
 struct Light {
-    int type;
+    LightType type;
     vec3 color;
     vec3 position;
     vec3 direction;

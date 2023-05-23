@@ -273,7 +273,9 @@ void modelTransform(App* app) {
 
 void createVSLayout(Program& program) {
     GLint attrCount = 0;
+    glUseProgram(program.handle);
     glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
+  
     glCheckError();
 
 
@@ -288,6 +290,7 @@ void createVSLayout(Program& program) {
         unsigned int attribLocation = glGetAttribLocation(program.handle, name);
         program.VSLayout.Push(length, size, type, *name, attribLocation);
     }
+    glUseProgram(0);
 }
 
 GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
@@ -348,8 +351,10 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 }
 
 void sendUniforms(App* app,Program& program) {
+
     unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
     glUniform1i(textureLocation, 0);
+    
 
     //MODEL TRANSFORM
     app->camera.modelTransform = glm::rotate(app->camera.modelTransform, glm::radians(0.2f), glm::vec3(0.0, 1.0, 0.0));
@@ -383,7 +388,7 @@ void Init(App* app)
     createVSLayout(TexturedMeshProgram);
     
     
-   
+    glEnable(GL_DEPTH_TEST);
 
     app->mode = Mode::Mode_TexturedQuad;
 }
@@ -412,6 +417,7 @@ void Render(App* app)
         case Mode_TexturedQuad:
         {
             glClearColor(0.2, 0.2, 0.2, 1.);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
             glUseProgram(texturedMeshProgram.handle);
             glCheckError();
@@ -431,10 +437,11 @@ void Render(App* app)
                 glCheckError();
                
                 sendUniforms(app, texturedMeshProgram);
-
+                
                 SubMesh& submesh = mesh.submeshes[i];
                 glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
                 glCheckError();
+                
             }
 
         }
