@@ -1,9 +1,6 @@
+
+
 #include "TextureLoader.h"
-#include "Code/engine.h"
-#include <stb_image.h>
-#include <stb_image_write.h>
-#include "Texture.h"
-#include "errorHandler.h"
 
 Image LoadImage(const char* filename)
 {
@@ -67,8 +64,10 @@ GLuint CreateTexture2DFromImage(Image image)
 u32 LoadTexture2D(App* app, const char* filepath)
 {
     for (u32 texIdx = 0; texIdx < app->textures.size(); ++texIdx)
-        if (app->textures[texIdx].filepath == filepath)
+        if (app->textures[texIdx].filepath == filepath){
             return texIdx;
+        }
+            
 
     Image image = LoadImage(filepath);
 

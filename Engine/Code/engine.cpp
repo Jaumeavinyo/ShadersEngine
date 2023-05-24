@@ -5,11 +5,10 @@
 // graphics related GUI options, and so on.
 //
 
+
 #include "engine.h"
 #include <imgui.h>
-#include <stb_image.h>
-#include <stb_image_write.h>
-#include "../Texture.h"
+
 
 #include <iostream>
 #include <fstream>
@@ -17,103 +16,9 @@
 
 
 #include "..\errorHandler.h"
-#include "..\MeshComponent.h"
+#include "../GeometryLoader.h"
 
-
-GLuint CreateProgramFromSource(String programSource, const char* shaderName)
-{
-    GLchar  infoLogBuffer[1024] = {};
-    GLsizei infoLogBufferSize = sizeof(infoLogBuffer);
-    GLsizei infoLogSize;
-    GLint   success;
-
-    char versionString[] = "#version 430\n";
-    char shaderNameDefine[128];
-    sprintf(shaderNameDefine, "#define %s\n", shaderName);
-    char vertexShaderDefine[] = "#define VERTEX\n";
-    char fragmentShaderDefine[] = "#define FRAGMENT\n";
-
-    const GLchar* vertexShaderSource[] = {
-        versionString,
-        shaderNameDefine,
-        vertexShaderDefine,
-        programSource.str
-    };
-    const GLint vertexShaderLengths[] = {
-        (GLint) strlen(versionString),
-        (GLint) strlen(shaderNameDefine),
-        (GLint) strlen(vertexShaderDefine),
-        (GLint) programSource.len
-    };
-    const GLchar* fragmentShaderSource[] = {
-        versionString,
-        shaderNameDefine,
-        fragmentShaderDefine,
-        programSource.str
-    };
-    const GLint fragmentShaderLengths[] = {
-        (GLint) strlen(versionString),
-        (GLint) strlen(shaderNameDefine),
-        (GLint) strlen(fragmentShaderDefine),
-        (GLint) programSource.len
-    };
-
-    GLuint vshader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vshader, ARRAY_COUNT(vertexShaderSource), vertexShaderSource, vertexShaderLengths);
-    glCompileShader(vshader);
-    glGetShaderiv(vshader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vshader, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glCompileShader() failed with vertex shader %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    GLuint fshader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fshader, ARRAY_COUNT(fragmentShaderSource), fragmentShaderSource, fragmentShaderLengths);
-    glCompileShader(fshader);
-    glGetShaderiv(fshader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fshader, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glCompileShader() failed with fragment shader %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    GLuint programHandle = glCreateProgram();
-    glAttachShader(programHandle, vshader);
-    glAttachShader(programHandle, fshader);
-    glLinkProgram(programHandle);
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(programHandle, infoLogBufferSize, &infoLogSize, infoLogBuffer);
-        ELOG("glLinkProgram() failed with program %s\nReported message:\n%s\n", shaderName, infoLogBuffer);
-    }
-
-    glUseProgram(0);
-
-    glDetachShader(programHandle, vshader);
-    glDetachShader(programHandle, fshader);
-    glDeleteShader(vshader);
-    glDeleteShader(fshader);
-
-    return programHandle;
-}
-
-u32 LoadProgram(App* app, const char* filepath, const char* programName)
-{
-    String programSource = ReadTextFile(filepath); //returns a string with the shader
-
-    Program program = {};
-    program.handle = CreateProgramFromSource(programSource, programName);//returns uint for shader program location
-    program.filepath = filepath;
-    program.programName = programName;
-    program.lastWriteTimestamp = GetFileLastWriteTimestamp(filepath);
-    app->programs.push_back(program);
-
-    return app->programs.size() - 1;
-}
-
-
+#include <GLFW/glfw3.h>
 
 void Gui(App* app)
 {
@@ -132,6 +37,35 @@ void Gui(App* app)
     ImGui::EndChild();
     ImGui::End();
 }
+
+
+glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactors) {
+    glm::mat4 transform = glm::translate(pos);
+    transform = scale(transform, scaleFactors);
+    return transform;
+}
+
+void createVSLayout(Program& program) {
+    GLint attrCount = 0;
+    glUseProgram(program.handle);
+    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
+
+    glCheckError();
+
+    for (int i = 0; i < attrCount; i++) {
+        const int bufferSize = 256; // adjust buffer size as needed
+        GLsizei length;
+        GLint size;
+        GLenum type;
+        GLchar name[bufferSize];
+        glGetActiveAttrib(program.handle, i, bufferSize, &length, &size, &type, name);
+        glCheckError();
+        unsigned int attribLocation = glGetAttribLocation(program.handle, name);
+        program.VSLayout.Push(length, size, type, *name, attribLocation);
+    }
+    glUseProgram(0);
+}
+
 
 ShaderProgramSource parseShader(std::string filePath) {
     std::ifstream stream(filePath);//opens the file
@@ -163,23 +97,26 @@ ShaderProgramSource parseShader(std::string filePath) {
     return { ss[0].str(),ss[1].str() };
 
 }
-
 unsigned int compileShader( unsigned int type, const std::string& source) {
 
     unsigned int id = glCreateShader(type);
+    glCheckError();
     const char* src = source.c_str();
     glShaderSource(id, 1, &src, nullptr);
+    glCheckError();
     glCompileShader(id);
+    glCheckError();
 
     //ERROR HANDLING HERE
     int result;
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    glCheckError();
     if (result == GL_FALSE) {
         int length;
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char* message = (char*)alloca(length*sizeof(char));
+        char* message = (char*)_malloca(length*sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        ELOG("Failed to compile %i shader!", type);
+        ELOG("Failed to compile %i shader! problem: %s", type, message);
         glDeleteShader(id);
         return 0;
     }
@@ -192,6 +129,7 @@ unsigned int compileShader( unsigned int type, const std::string& source) {
 unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader) {
 
     unsigned int program = glCreateProgram();
+    glCheckError();
     unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
@@ -201,11 +139,9 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     glCheckError();
     glLinkProgram(program);
     glCheckError();
-
     //HANDLE LINKING ERRORS
     int linkSuccess = GL_FALSE;
     glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
-    glCheckError();
 
     if (linkSuccess == GL_FALSE) {
         GLint logLength = 0;
@@ -219,7 +155,7 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
     }
 
     glValidateProgram(program);
-   
+    glCheckError();
     
    
 
@@ -228,150 +164,303 @@ unsigned int createShader(const std::string& vertexShader, const std::string& fr
 
     return program;
 }
+unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSource shaderProgramsSrc) {
+    
+    const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    if (glslVersion != nullptr) {
+        // Print or store the GLSL version
+        printf("GLSL version: %s\n", glslVersion);
+    }
+    else {
+        // Failed to retrieve GLSL version
+        printf("Failed to retrieve GLSL version\n");
+    }
+    
+    app->shaderProgramsSrc = parseShader(filePath);
+    Program program = {};
+    program.handle = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
+    program.filepath = filePath;
+    program.programName = filePath;
+    program.lastWriteTimestamp = GetFileLastWriteTimestamp(filePath.c_str());
+    app->programs.push_back(program);
+
+    return app->programs.size() - 1;
+}
+
+
+void cameraSetUp(App* app) {
+    app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
+    app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    app->camera.cameraDirection = glm::normalize(app->camera.cameraPos - app->camera.cameraTarget);//The name direction vector is not the best chosen name, since it is actually pointing in the reverse direction of what it is targeting.
+    app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
+    app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
+
+    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+}
+
+
+void modelTransform(App* app) {
+    app->camera.modelTransform = glm::mat4(1.0f);
+    app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
+}
+
+void setUniformBuffer(App* app,std::string name) {
+   
+    app->LocalParams.name = name;
+  
+    GLint maxUniformBufferSize;
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBufferSize);
+    GLint uniformBlockAligment;
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBlockAligment);
+
+    glGenBuffers(1, &app->LocalParams.BufferHandle);
+    glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
+    glBufferData(GL_UNIFORM_BUFFER, maxUniformBufferSize, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    unsigned int blockOffset = 0;
+    unsigned int blockSize = sizeof(glm::mat4) * 2;
+    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->LocalParams.BufferHandle, blockOffset, blockSize);
+   
+}
+
+
+void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm::mat4 worldViewProjection) {
+       
+    glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
+    unsigned char* bufferData = (unsigned char*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    unsigned int bufferHead = 0;
+    app->entities[entityIDx].localParamsOffset = bufferHead;
+
+    memcpy(bufferData + bufferHead, glm::value_ptr(worldMat), sizeof(glm::mat4));
+    bufferHead += sizeof(glm::mat4);
+
+    memcpy(bufferData + bufferHead, glm::value_ptr(worldViewProjection), sizeof(glm::mat4));
+    bufferHead += sizeof(glm::mat4);
+
+    app->entities[entityIDx].localParamsSize = bufferHead - app->entities[entityIDx].localParamsOffset;
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  
+}
+
+
+void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
+
+    Entity entity = app->entities[entityIDx];
+    unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
+    glUniform1i(textureLocation, 0);
+    
+    // MATRIX UNIFORMS
+    app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
+    entity.pos.x += glm::sin((float)glfwGetTime());
+    entity.worldMat = transformPositionScale(entity.pos, vec3(0.5));
+    entity.worldMat = glm::rotate(entity.worldMat, (float)glfwGetTime()*entity.pos.x, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 worldViewProjection = app->camera.projectionTransform * app->camera.viewTransform * entity.worldMat;
+
+    updateUniformBuffers(app,entityIDx, entity.worldMat, worldViewProjection);
+
+}
+
 
 void Init(App* app)
 {
+    // SETUP INITIAL CAMERA VARS
+    cameraSetUp(app);
 
+    // SET UP MODEL/GENERAL TRANSFORMS FOR THE SPACE
+    modelTransform(app);
 
-    app->gameObjects.push_back(new GameObject());
-    const char* patrickPath = "Patrick/Patrick.obj";
-    std::string name = "MeshComponent";
-    MeshComponent* meshComp = new MeshComponent(app,app->gameObjects[0], name, patrickPath);
-    app->gameObjects[0]->addComponent(meshComp);
+    //  LOAD MODEL AND CREATE 3 IDENTICAL ENTITIES
+    app->modelIDx = LoadModel(app, "Patrick/Patrick.obj");
 
-    //SHADER
-    app->shaderProgramsSrc = parseShader("Basic.shader");
-    app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    glUseProgram(app->shader);
-    glCheckError();
+    Entity entity0 = Entity{glm::mat4(),glm::vec3(6.0,0.0,-15.0),app->modelIDx};
+    Entity entity1 = Entity{ glm::mat4(),glm::vec3(1.0,0.0,-10.0),app->modelIDx };
+    Entity entity2 = Entity{ glm::mat4(),glm::vec3(-2.0,0.0,-5.0),app->modelIDx };
+    app->entities.push_back(entity0);
+    app->entities.push_back(entity1);
+    app->entities.push_back(entity2);
 
-    int location1 = glGetUniformLocation(app->shader, "u_Texture");
-    assert(location1 != -1);
-    glUniform1i(location1, 0);
+    //  GENERATE UNIFORM BUFFER FOR TRANSFORM MATRICES
+    setUniformBuffer(app, "LocalParams");
 
-    //!SHADER
-
-    glUseProgram(0);
-    glCheckError();
-
-    
-    
-
-    
-    //VertexBufferLayout layout;
-    //layout.Push<float>(3);//first element of the stride: 2 floats for position
-    //layout.Push<float>(2);//second element 2 floats for uvg texcorrds
-    //Mesh* mesh = new Mesh(app->vertices, layout, app->indices, 6);
-
-    //SHADER
-    //app->shaderProgramsSrc = parseShader("Basic.shader");
-    //app->shader = createShader(app->shaderProgramsSrc.vertexSrc, app->shaderProgramsSrc.fragmentSrc);
-    //glUseProgram(app->shader);
-    //glCheckError();
-
-    //int location1 = glGetUniformLocation(app->shader, "u_Texture");
-    //assert(location1 != -1);
-    //glUniform1i(location1, 0);
-   
-    ////!SHADER
-    //
-
-    //glUseProgram(0);
-    //glCheckError();
-
-
-    //Material* mat = new Material();
-
-    ////TEXTURE LOADING
-    //mat->textureID = LoadTexture2D(app, "WorkingDir/dice.png");
-    //glActiveTexture(GL_TEXTURE0);
-    //glCheckError();
-    ////!TEXTURE LOADING
-
-    //
-
-    //std::string name = "MeshComponent";
-    //const char* resourcePath = "patrick.obj";
-    //MeshComponent* meshComp = new MeshComponent(app->gameObjects[0], name, mat, resourcePath);
-    //
-
-    //app->gameObjects[0]->addComponent(meshComp);
-    //dynamic_cast<MeshComponent*>(app->gameObjects[0]->getComponent(0))->Init();
+    // LOAD AND CREATE SHADER PROGRAM, THEN CREATE VERTEX SHADER LAYOUT / INPUT SHADER LAYOUT
+    app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic2.shader", app->shaderProgramsSrc);
+    Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+    createVSLayout(TexturedMeshProgram);
+       
+    glEnable(GL_DEPTH_TEST);
 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
 
+void updateCameraRotation(App* app,GLFWwindow* window) {
+    const float sensitivity = 0.1f; // adjust mouse sensitivity
+    const float maxPitch = 89.0f; // maximum pitch angle (in degrees)
+    const float minPitch = -20.0f; // minimum pitch angle (in degrees)
 
-void Update(App* app)
-{
-    // You can handle app->input keyboard/mouse here
+    static double lastMouseX = 0.0;
+    static double lastMouseY = 0.0;
 
-    for (int i = 0; i < app->gameObjects.size(); i++) {
-        app->gameObjects[i]->Update();
-    }
+    // Get current mouse position
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    // Calculate mouse movement deltas
+    double deltaX = mouseX - lastMouseX;
+    double deltaY = mouseY - lastMouseY;
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+
+    // Apply rotation to camera
+    float yaw = static_cast<float>(deltaX) * sensitivity;
+    float pitch = static_cast<float>(deltaY) * sensitivity;
+
+    app->camera.cameraYaw += yaw;
+    app->camera.cameraPitch += pitch;
+
+    // Clamp pitch to the specified range
+    if (app->camera.cameraPitch > maxPitch)
+        app->camera.cameraPitch = maxPitch;
+    if (app->camera.cameraPitch < minPitch)
+        app->camera.cameraPitch = minPitch;
+
+    // Update camera direction based on yaw and pitch
+    float yawRadians = glm::radians(app->camera.cameraYaw);
+    float pitchRadians = glm::radians(app->camera.cameraPitch);
+    glm::vec3 direction;
+    direction.x = cos(yawRadians) * cos(pitchRadians);
+    direction.y = sin(pitchRadians);
+    direction.z = sin(yawRadians) * cos(pitchRadians);
+    app->camera.cameraDirection = glm::normalize(direction);
 }
 
-unsigned int FindVao(Mesh* mesh, unsigned int submeshIndex, unsigned int progHandle) {
-    Submesh& submesh = mesh->submeshes[submeshIndex];
-    //try finding a VAO for this submesh/program
-    for (unsigned int i = 0; i < (u32)submesh.vaos.size(); i++) {
-        if (submesh.vaos[i].programHandle == progHandle) {
+
+void updateCameraMovement(App* app, GLFWwindow* window) {
+    const float cameraSpeed = 0.05f;
+
+
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        app->camera.cameraPos += cameraSpeed * -app->camera.cameraDirection;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        app->camera.cameraPos -= cameraSpeed * -app->camera.cameraDirection;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        app->camera.cameraPos -= glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, -app->camera.cameraRight)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraRight)) * cameraSpeed;
+}
+
+
+void Update(App* app, GLFWwindow* window)
+{
+    updateCameraRotation(app,window);
+    updateCameraMovement(app,window);
+}
+
+
+//look for an existing vao that fits requirements or create new one if not found
+GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
+   
+    SubMesh& submesh = mesh.submeshes[submeshIndex];
+
+    //  LOOK FOR EXISTING VAO/PROGRAM FOR THE SUBMESH
+    for (unsigned int i = 0; i < submesh.vaos.size(); i++) {
+        if (submesh.vaos[i].programHandle == program.handle) {
             return submesh.vaos[i].handle;
         }
     }
 
-    unsigned int vaoHandle = 0;
+   //  CREATE VAO
+    GLuint vaoHandle = 0;
+    glGenVertexArrays(1, &vaoHandle);
+    glBindVertexArray(vaoHandle);
 
+    glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO_handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
 
+    for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
+        bool attribLinked = false;
+        for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
+            if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
+                unsigned int index = submesh.VBLayout.getElements()[j].location;
+                unsigned int count = submesh.VBLayout.getElements()[j].count;
+                unsigned int offset = submesh.VBLayout.getElements()[j].elementOffset + submesh.vertexOffset;
+                unsigned int stride = submesh.VBLayout.getStride();
+                auto element = submesh.VBLayout.getElements()[j];
+
+                glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
+                glCheckError();
+                glEnableVertexAttribArray(index);
+                glCheckError();
+
+                attribLinked = true;
+                break;
+            }
+        }
+        assert(attribLinked);//submesh VBLayout should have attribute for each VSLayout attribute
+    }
+
+    glBindVertexArray(0);
+
+    VAO vao = { vaoHandle,program.handle };
+    submesh.vaos.push_back(vao);
+
+    return vaoHandle;
 }
 
+
+void renderEntity(App*app, unsigned int entityIDx) {
+    Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
+    glUseProgram(texturedMeshProgram.handle);
+    glCheckError();
+
+    Model& model = app->models[app->entities[entityIDx].modelIDx];
+    Mesh& mesh = app->meshes[model.meshIDx];
+
+    for (unsigned int i = 0; i < mesh.submeshes.size(); ++i) {
+        GLuint vao = FindVAO(mesh, i, texturedMeshProgram);
+        glBindVertexArray(vao);
+        glCheckError();
+        unsigned int submeshMatIDx = model.materialIDx[i];
+        Material& submeshMaterial = app->materials[submeshMatIDx];
+
+        glActiveTexture(GL_TEXTURE0);
+        glCheckError();
+        glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIDx].handle);
+        glCheckError();
+
+        sendUniforms(app, texturedMeshProgram, entityIDx);
+
+        SubMesh& submesh = mesh.submeshes[i];
+        glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(unsigned long long int)submesh.indexOffset);
+        glCheckError();
+
+    }
+}
+
+
+//render geometru
 void Render(App* app)
 {
     switch (app->mode)
     {
         case Mode_TexturedQuad:
         {
-
-            glUseProgram(app->shader);
-            glCheckError();
-            for (int i = 0; i < app->gameObjects.size(); i++) {
-                for (int j = 0; j < app->gameObjects[i]->GObjComponents.size();j++) {
-                    if (app->gameObjects[i]->getComponent(j)->getName() == "MeshComponent") {
-                        MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(j));
-
-                        for (int k = 0; k < meshComp->getMesh()->submeshes.size(); k++) {
-                            unsigned int vao = FindVao(meshComp->getMesh(), k, app->shader);
-                        }
-                    }
-                }
-            }
-            //glUseProgram(app->shader);
-            //glCheckError();
-            //glClearColor(0.2, 0.2, 0.2, 1.0);
-            //glCheckError();
-            //for (int i = 0; i < app->gameObjects.size(); i++) {
-            //    if (app->gameObjects[i]->getComponent(i)->getName() == "MeshComponent") {
-            //        MeshComponent* meshComp = dynamic_cast<MeshComponent*>(app->gameObjects[i]->getComponent(i));//get mesh from component list and bind va and ib
-            //        
-            //        
-            //        glBindTexture(GL_TEXTURE_2D,app->textures[meshComp->getMaterial()->textureID].handle );
-            //        glCheckError();
-            //        glBindVertexArray(meshComp->getMesh()->getVAO());
-            //        glCheckError();
-
-            //        glDrawElements(GL_TRIANGLES, meshComp->getMesh()->indexCount, GL_UNSIGNED_INT, nullptr);//nullptr bc we already passed indices with the ibo glBufferData() func
-            //        glCheckError();
-            //    }
-            //      
-            //}
-            
-
-          
+            glClearColor(0.2, 0.2, 0.2, 1.);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            for (unsigned int i = 0; i < app->entities.size(); i++) {
+                renderEntity(app, i);
+            }          
         }
-            break;
-
-        
+            break;     
     }
 }
 

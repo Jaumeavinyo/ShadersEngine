@@ -7,6 +7,9 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#define WINDOW_WIDTH  1200
+#define WINDOW_HEIGHT 980
+
 
 #include <stdio.h>
 #include <assert.h>

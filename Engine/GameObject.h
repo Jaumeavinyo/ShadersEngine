@@ -16,7 +16,7 @@ public:
 
 
 	void Update();
-
+private:
 
 	std::vector<Component*> GObjComponents;
 

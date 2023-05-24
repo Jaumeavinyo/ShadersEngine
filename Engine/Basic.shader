@@ -1,32 +1,39 @@
 #shader vertex 
-#version 330 core
+#version 430 core
 
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec2 texCoord;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoord;
 
-out vec2 v_TexCoord;
 
-void main()
-{
-	gl_Position = position;
-	v_TexCoord = texCoord;
+out vec3 vPosition;
+out vec3 vNormal;
+out vec2 vTexCoord;
+
+
+uniform mat4 worldMat;
+uniform mat4 worldViewProjection;
+
+void main() {
+	vTexCoord = aTexCoord;
+	vPosition = vec3(worldMat*vec4(aPosition,1.0));
+	vNormal = vec3(worldMat * vec4(aNormal, 0.0));
+	gl_Position = worldViewProjection * vec4(aPosition, 1.0);
 }
-;
 
 
 #shader fragment
-#version 330 core
+#version 430 core
 
-layout(location = 0) out vec4 color;
+out vec4 color;
 
-in vec2 v_TexCoord;
+in vec2 vTexCoord;
+in vec3 vNormal;
 
-uniform vec4 u_Color;
-uniform sampler2D u_Texture;
+uniform sampler2D uTexture;
 
-void main()
-{
-	vec4 texColor = texture(u_Texture, v_TexCoord);
-	color = texColor;
+
+
+void main() {
+	color = texture(uTexture, vTexCoord);//vec4(1.0,1.0,0.5,1.0);//
 }
-;

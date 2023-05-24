@@ -26,8 +26,7 @@
 #include "..\VertexBufferLayout.h"
 
 #define WINDOW_TITLE  "Advanced Graphics Programming"
-#define WINDOW_WIDTH  800
-#define WINDOW_HEIGHT 600
+
 
 #define GLOBAL_FRAME_ARENA_SIZE MB(16)
 u8* GlobalFrameArenaMemory = NULL;
@@ -231,7 +230,7 @@ int main()
                 app.input.mouseButtons[i] = BUTTON_IDLE;
 
         // Update
-        Update(&app);
+        Update(&app,window);
 
         // Transition input key/button states
         if (!ImGui::GetIO().WantCaptureKeyboard)
