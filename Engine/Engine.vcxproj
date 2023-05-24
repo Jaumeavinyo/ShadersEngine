@@ -59,6 +59,7 @@
     <ClInclude Include="ThirdParty\imgui-docking\imstb_textedit.h" />
     <ClInclude Include="ThirdParty\imgui-docking\imstb_truetype.h" />
     <ClInclude Include="ThirdParty\stb\stb_image.h" />
+    <ClInclude Include="UniformBlockBufferResources.h" />
     <ClInclude Include="VertexBufferLayout.h" />
     <ClInclude Include="VertexShaderLayout.h" />
   </ItemGroup>
