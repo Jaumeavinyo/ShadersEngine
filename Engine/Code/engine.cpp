@@ -223,12 +223,15 @@ void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm
     glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
     unsigned char* bufferData = (unsigned char*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
     unsigned int bufferHead = 0;
+    app->entities[entityIDx].localParamsOffset = bufferHead;
 
     memcpy(bufferData + bufferHead, glm::value_ptr(worldMat), sizeof(glm::mat4));
     bufferHead += sizeof(glm::mat4);
 
     memcpy(bufferData + bufferHead, glm::value_ptr(worldViewProjection), sizeof(glm::mat4));
     bufferHead += sizeof(glm::mat4);
+
+    app->entities[entityIDx].localParamsSize = bufferHead - app->entities[entityIDx].localParamsOffset;
 
     glUnmapBuffer(GL_UNIFORM_BUFFER);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
