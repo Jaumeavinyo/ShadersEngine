@@ -20,11 +20,6 @@
 
 #include <GLFW/glfw3.h>
 
-glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactors) {
-    glm::mat4 transform = glm::translate(pos);
-    transform = scale(transform, scaleFactors);
-    return transform;
-}
 void Gui(App* app)
 {
     ImGui::Begin("Info");
@@ -42,6 +37,36 @@ void Gui(App* app)
     ImGui::EndChild();
     ImGui::End();
 }
+
+
+glm::mat4 transformPositionScale(const vec3& pos, const vec3& scaleFactors) {
+    glm::mat4 transform = glm::translate(pos);
+    transform = scale(transform, scaleFactors);
+    return transform;
+}
+
+void createVSLayout(Program& program) {
+    GLint attrCount = 0;
+    glUseProgram(program.handle);
+    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
+
+    glCheckError();
+
+    for (int i = 0; i < attrCount; i++) {
+        const int bufferSize = 256; // adjust buffer size as needed
+        GLsizei length;
+        GLint size;
+        GLenum type;
+        GLchar name[bufferSize];
+        glGetActiveAttrib(program.handle, i, bufferSize, &length, &size, &type, name);
+        glCheckError();
+        unsigned int attribLocation = glGetAttribLocation(program.handle, name);
+        program.VSLayout.Push(length, size, type, *name, attribLocation);
+    }
+    glUseProgram(0);
+}
+
+
 ShaderProgramSource parseShader(std::string filePath) {
     std::ifstream stream(filePath);//opens the file
 
@@ -161,6 +186,8 @@ unsigned int LoadAndCreateProgram(App*app,std::string filePath, ShaderProgramSou
 
     return app->programs.size() - 1;
 }
+
+
 void cameraSetUp(App* app) {
     app->camera.cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);//zpositive = backwards
     app->camera.cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -168,41 +195,20 @@ void cameraSetUp(App* app) {
     app->camera.cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), app->camera.cameraDirection));
     app->camera.cameraUp = glm::cross(app->camera.cameraDirection, app->camera.cameraRight);
 
-    
-
     app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
     app->camera.projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
 }
+
+
 void modelTransform(App* app) {
     app->camera.modelTransform = glm::mat4(1.0f);
     app->camera.modelTransform = glm::scale(app->camera.modelTransform, glm::vec3(0.2, 0.2, 0.2));
 }
-void createVSLayout(Program& program) {
-    GLint attrCount = 0;
-    glUseProgram(program.handle);
-    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attrCount);
-  
-    glCheckError();
 
-
-    for (int i = 0; i < attrCount; i++) {
-        const int bufferSize = 256; // adjust buffer size as needed
-        GLsizei length;
-        GLint size;
-        GLenum type;
-        GLchar name[bufferSize];
-        glGetActiveAttrib(program.handle, i, bufferSize, &length, &size, &type, name);
-        glCheckError();
-        unsigned int attribLocation = glGetAttribLocation(program.handle, name);
-        program.VSLayout.Push(length, size, type, *name, attribLocation);
-    }
-    glUseProgram(0);
-}
 void setUniformBuffer(App* app,std::string name) {
    
     app->LocalParams.name = name;
-    
+  
     GLint maxUniformBufferSize;
     glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBufferSize);
     GLint uniformBlockAligment;
@@ -218,6 +224,8 @@ void setUniformBuffer(App* app,std::string name) {
     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->LocalParams.BufferHandle, blockOffset, blockSize);
    
 }
+
+
 void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm::mat4 worldViewProjection) {
        
     glBindBuffer(GL_UNIFORM_BUFFER, app->LocalParams.BufferHandle);
@@ -237,9 +245,10 @@ void updateUniformBuffers(App* app,unsigned int entityIDx,glm::mat4 worldMat,glm
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   
 }
+
+
 void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
 
-    //Model model = app->models[modelIDx];
     Entity entity = app->entities[entityIDx];
     unsigned int textureLocation = glGetUniformLocation(program.handle, "uTexture");
     glUniform1i(textureLocation, 0);
@@ -248,22 +257,24 @@ void sendUniforms(App* app,Program& program, unsigned int entityIDx) {
     app->camera.viewTransform = glm::lookAt(app->camera.cameraPos, app->camera.cameraPos + (-app->camera.cameraDirection), app->camera.cameraUp);
     entity.pos.x += glm::sin((float)glfwGetTime());
     entity.worldMat = transformPositionScale(entity.pos, vec3(0.5));
-    entity.worldMat = glm::rotate(entity.worldMat, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+    entity.worldMat = glm::rotate(entity.worldMat, (float)glfwGetTime()*entity.pos.x, glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 worldViewProjection = app->camera.projectionTransform * app->camera.viewTransform * entity.worldMat;
 
     updateUniformBuffers(app,entityIDx, entity.worldMat, worldViewProjection);
 
 }
 
+
 void Init(App* app)
 {
+    // SETUP INITIAL CAMERA VARS
     cameraSetUp(app);
+
+    // SET UP MODEL/GENERAL TRANSFORMS FOR THE SPACE
     modelTransform(app);
 
-    //const char* name = "cube/Crate1.obj";
-    const char* name = "Patrick/Patrick.obj";
-    app->modelIDx = LoadModel(app, name);
-    /*app->models[app->modelIDx].pos = glm::vec3(0.0, 0.0, -10.0);*/
+    //  LOAD MODEL AND CREATE 3 IDENTICAL ENTITIES
+    app->modelIDx = LoadModel(app, "Patrick/Patrick.obj");
 
     Entity entity0 = Entity{glm::mat4(),glm::vec3(6.0,0.0,-15.0),app->modelIDx};
     Entity entity1 = Entity{ glm::mat4(),glm::vec3(1.0,0.0,-10.0),app->modelIDx };
@@ -272,25 +283,21 @@ void Init(App* app)
     app->entities.push_back(entity1);
     app->entities.push_back(entity2);
 
+    //  GENERATE UNIFORM BUFFER FOR TRANSFORM MATRICES
+    setUniformBuffer(app, "LocalParams");
 
-    //localParams uniform block
-    std::string uniformName = "LocalParams";
-    setUniformBuffer(app,uniformName);
-
+    // LOAD AND CREATE SHADER PROGRAM, THEN CREATE VERTEX SHADER LAYOUT / INPUT SHADER LAYOUT
     app->texturedMeshProgramIDx = LoadAndCreateProgram(app, "../Basic2.shader", app->shaderProgramsSrc);
     Program& TexturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     createVSLayout(TexturedMeshProgram);
-    
+       
     glEnable(GL_DEPTH_TEST);
 
     app->mode = Mode::Mode_TexturedQuad;
 }
 
 
-void Update(App* app, GLFWwindow* window)
-{
-    // You can handle app->input keyboard/mouse here
-    const float cameraSpeed = 0.05f; 
+void updateCameraRotation(App* app,GLFWwindow* window) {
     const float sensitivity = 0.1f; // adjust mouse sensitivity
     const float maxPitch = 89.0f; // maximum pitch angle (in degrees)
     const float minPitch = -20.0f; // minimum pitch angle (in degrees)
@@ -329,6 +336,12 @@ void Update(App* app, GLFWwindow* window)
     direction.y = sin(pitchRadians);
     direction.z = sin(yawRadians) * cos(pitchRadians);
     app->camera.cameraDirection = glm::normalize(direction);
+}
+
+
+void updateCameraMovement(App* app, GLFWwindow* window) {
+    const float cameraSpeed = 0.05f;
+
 
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -344,18 +357,28 @@ void Update(App* app, GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         app->camera.cameraPos += glm::normalize(glm::cross(-app->camera.cameraDirection, app->camera.cameraRight)) * cameraSpeed;
 }
+
+
+void Update(App* app, GLFWwindow* window)
+{
+    updateCameraRotation(app,window);
+    updateCameraMovement(app,window);
+}
+
+
+//look for an existing vao that fits requirements or create new one if not found
 GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
+   
     SubMesh& submesh = mesh.submeshes[submeshIndex];
 
-    //try find vao for the submesh/program
-
+    //  LOOK FOR EXISTING VAO/PROGRAM FOR THE SUBMESH
     for (unsigned int i = 0; i < submesh.vaos.size(); i++) {
         if (submesh.vaos[i].programHandle == program.handle) {
             return submesh.vaos[i].handle;
         }
     }
 
-    //create vao for this submesh program
+   //  CREATE VAO
     GLuint vaoHandle = 0;
     glGenVertexArrays(1, &vaoHandle);
     glBindVertexArray(vaoHandle);
@@ -363,18 +386,14 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
     glBindBuffer(GL_ARRAY_BUFFER, mesh.VBO_handle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.IBO_handle);
 
-
-
     for (unsigned int i = 0; i < program.VSLayout.getElements().size(); ++i) {
         bool attribLinked = false;
         for (unsigned int j = 0; j < submesh.VBLayout.getElements().size(); ++j) {
             if (program.VSLayout.getElements()[i].location == submesh.VBLayout.getElements()[j].location) {
-
                 unsigned int index = submesh.VBLayout.getElements()[j].location;
                 unsigned int count = submesh.VBLayout.getElements()[j].count;
                 unsigned int offset = submesh.VBLayout.getElements()[j].elementOffset + submesh.vertexOffset;
                 unsigned int stride = submesh.VBLayout.getStride();
-
                 auto element = submesh.VBLayout.getElements()[j];
 
                 glVertexAttribPointer(index, count, element.type, GL_FALSE/*element.normalized*/, stride, (const void*)offset);
@@ -382,10 +401,8 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
                 glEnableVertexAttribArray(index);
                 glCheckError();
 
-
                 attribLinked = true;
                 break;
-
             }
         }
         assert(attribLinked);//submesh VBLayout should have attribute for each VSLayout attribute
@@ -393,17 +410,18 @@ GLuint FindVAO(Mesh& mesh, unsigned int submeshIndex, const Program& program) {
 
     glBindVertexArray(0);
 
-
     VAO vao = { vaoHandle,program.handle };
     submesh.vaos.push_back(vao);
 
     return vaoHandle;
-
 }
-void renderEntities(App*app, unsigned int entityIDx) {
+
+
+void renderEntity(App*app, unsigned int entityIDx) {
     Program texturedMeshProgram = app->programs[app->texturedMeshProgramIDx];
     glUseProgram(texturedMeshProgram.handle);
     glCheckError();
+
     Model& model = app->models[app->entities[entityIDx].modelIDx];
     Mesh& mesh = app->meshes[model.meshIDx];
 
@@ -427,6 +445,9 @@ void renderEntities(App*app, unsigned int entityIDx) {
 
     }
 }
+
+
+//render geometru
 void Render(App* app)
 {
     switch (app->mode)
@@ -436,14 +457,10 @@ void Render(App* app)
             glClearColor(0.2, 0.2, 0.2, 1.);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             for (unsigned int i = 0; i < app->entities.size(); i++) {
-                renderEntities(app, i);
-            }
-            
-
+                renderEntity(app, i);
+            }          
         }
-            break;
-
-        
+            break;     
     }
 }
 
